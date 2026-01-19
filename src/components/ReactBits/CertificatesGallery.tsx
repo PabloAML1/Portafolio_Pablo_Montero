@@ -2,657 +2,332 @@ import { Camera, Mesh, Plane, Program, Renderer, Texture, Transform } from 'ogl'
 import { useEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
 
-type GL = Renderer['gl'];
 
-function debounce<T extends (...args: any[]) => void>(func: T, wait: number) {
-    let timeout: number;
-    return function (this: any, ...args: Parameters<T>) {
-        window.clearTimeout(timeout);
-        timeout = window.setTimeout(() => func.apply(this, args), wait);
-    };
-}
-
+// --- UTILIDADES ---
 function lerp(p1: number, p2: number, t: number): number {
     return p1 + (p2 - p1) * t;
 }
 
-function autoBind(instance: any): void {
-    const proto = Object.getPrototypeOf(instance);
-    Object.getOwnPropertyNames(proto).forEach(key => {
-        if (key !== 'constructor' && typeof instance[key] === 'function') {
-            instance[key] = instance[key].bind(instance);
-        }
-    });
-}
+// --- SHADERS ---
+const vertexShader = `
+    attribute vec3 position;
+    attribute vec2 uv;
+    uniform mat4 modelViewMatrix;
+    uniform mat4 projectionMatrix;
+    uniform float uBendFactor;
+    
+    varying vec2 vUv;
 
-function getFontSize(font: string): number {
-    const match = font.match(/(\d+)px/);
-    return match ? parseInt(match[1], 10) : 30;
-}
+    void main() {
+        vUv = uv;
+        vec3 pos = position;
+        
+        // Curvatura estática en eje X (sin deformación por velocidad)
+        float curve = pos.x * pos.x * uBendFactor;
+        pos.y -= curve;
 
-function createTextTexture(
-    gl: GL,
-    text: string,
-    font: string = 'bold 30px monospace',
-    color: string = 'black'
-): { texture: Texture; width: number; height: number } {
-    const canvas = document.createElement('canvas');
-    const context = canvas.getContext('2d');
-    if (!context) throw new Error('Could not get 2d context');
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
+    }
+`;
 
-    context.font = font;
-    const metrics = context.measureText(text);
-    const textWidth = Math.ceil(metrics.width);
-    const fontSize = getFontSize(font);
-    const textHeight = Math.ceil(fontSize * 1.2);
+const fragmentShader = `
+    precision highp float;
+    uniform sampler2D tMap;
+    uniform vec2 uImageSizes;
+    uniform vec2 uPlaneSizes;
+    uniform float uBorderRadius;
+    varying vec2 vUv;
 
-    canvas.width = textWidth + 20;
-    canvas.height = textHeight + 20;
-
-    context.font = font;
-    context.fillStyle = color;
-    context.textBaseline = 'middle';
-    context.textAlign = 'center';
-    context.clearRect(0, 0, canvas.width, canvas.height);
-    context.fillText(text, canvas.width / 2, canvas.height / 2);
-
-    const texture = new Texture(gl, { generateMipmaps: false });
-    texture.image = canvas;
-    return { texture, width: canvas.width, height: canvas.height };
-}
-
-interface TitleProps {
-    gl: GL;
-    plane: Mesh;
-    renderer: Renderer;
-    text: string;
-    textColor?: string;
-    font?: string;
-}
-
-class Title {
-    gl: GL;
-    plane: Mesh;
-    renderer: Renderer;
-    text: string;
-    textColor: string;
-    font: string;
-    mesh!: Mesh;
-
-    constructor({ gl, plane, renderer, text, textColor = '#545050', font = '30px sans-serif' }: TitleProps) {
-        autoBind(this);
-        this.gl = gl;
-        this.plane = plane;
-        this.renderer = renderer;
-        this.text = text;
-        this.textColor = textColor;
-        this.font = font;
-        this.createMesh();
+    // SDF para bordes redondeados
+    float roundedBoxSDF(vec2 p, vec2 b, float r) {
+        vec2 d = abs(p) - b;
+        return length(max(d, vec2(0.0))) + min(max(d.x, d.y), 0.0) - r;
     }
 
-    createMesh() {
-        const { texture, width, height } = createTextTexture(this.gl, this.text, this.font, this.textColor);
-        const geometry = new Plane(this.gl);
-        const program = new Program(this.gl, {
-            vertex: `
-                attribute vec3 position;
-                attribute vec2 uv;
-                uniform mat4 modelViewMatrix;
-                uniform mat4 projectionMatrix;
-                varying vec2 vUv;
-                void main() {
-                    vUv = uv;
-                    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-                }
-            `,
-            fragment: `
-                precision highp float;
-                uniform sampler2D tMap;
-                varying vec2 vUv;
-                void main() {
-                    vec4 color = texture2D(tMap, vUv);
-                    if (color.a < 0.1) discard;
-                    gl_FragColor = color;
-                }
-            `,
-            uniforms: { tMap: { value: texture } },
-            transparent: true
-        });
-        this.mesh = new Mesh(this.gl, { geometry, program });
-        const aspect = width / height;
-        const textHeightScaled = this.plane.scale.y * 0.15;
-        const textWidthScaled = textHeightScaled * aspect;
-        this.mesh.scale.set(textWidthScaled, textHeightScaled, 1);
-        this.mesh.position.y = -this.plane.scale.y * 0.5 - textHeightScaled * 0.5 - 0.05;
-        this.mesh.setParent(this.plane);
+    void main() {
+        // Object Cover logic
+        vec2 ratio = vec2(
+            min((uPlaneSizes.x / uPlaneSizes.y) / (uImageSizes.x / uImageSizes.y), 1.0),
+            min((uPlaneSizes.y / uPlaneSizes.x) / (uImageSizes.y / uImageSizes.x), 1.0)
+        );
+        vec2 uv = vec2(
+            vUv.x * ratio.x + (1.0 - ratio.x) * 0.5,
+            vUv.y * ratio.y + (1.0 - ratio.y) * 0.5
+        );
+
+        vec4 color = texture2D(tMap, uv);
+        
+        // Bordes redondeados
+        float d = roundedBoxSDF(vUv - 0.5, vec2(0.5 - uBorderRadius), uBorderRadius);
+        float alpha = 1.0 - smoothstep(-0.001, 0.001, d);
+        
+        gl_FragColor = vec4(color.rgb, alpha * color.a);
+        if (gl_FragColor.a < 0.01) discard;
     }
-}
+`;
 
-interface ScreenSize {
-    width: number;
-    height: number;
-}
-
-interface Viewport {
-    width: number;
-    height: number;
-}
-
-interface MediaProps {
-    geometry: Plane;
-    gl: GL;
-    image: string;
-    index: number;
-    length: number;
-    renderer: Renderer;
-    scene: Transform;
-    screen: ScreenSize;
-    text: string;
-    viewport: Viewport;
-    bend: number;
-    textColor: string;
-    borderRadius?: number;
-    font?: string;
-    onClick?: (image: string, text: string) => void;
-}
+// --- CLASES WEBGL ---
 
 class Media {
-    extra: number = 0;
+    gl: any;
     geometry: Plane;
-    gl: GL;
-    image: string;
-    index: number;
-    length: number;
-    renderer: Renderer;
     scene: Transform;
-    screen: ScreenSize;
+    program: Program;
+    mesh: Mesh;
+    image: string;
     text: string;
-    viewport: Viewport;
-    bend: number;
-    textColor: string;
-    borderRadius: number;
-    font?: string;
-    onClick?: (image: string, text: string) => void;
-    program!: Program;
-    plane!: Mesh;
-    title!: Title;
-    scale!: number;
-    padding!: number;
-    width!: number;
-    widthTotal!: number;
-    x!: number;
-    speed: number = 0;
-    isBefore: boolean = false;
-    isAfter: boolean = false;
+    index: number;
+    width: number = 0;
+    widthTotal: number = 0;
+    x: number = 0;
+    extra: number = 0;
+    viewport: { width: number; height: number };
 
-    constructor({
-        geometry,
-        gl,
-        image,
-        index,
-        length,
-        renderer,
-        scene,
-        screen,
-        text,
-        viewport,
-        bend,
-        textColor,
-        borderRadius = 0,
-        font,
-        onClick
-    }: MediaProps) {
-        this.geometry = geometry;
+    constructor({ gl, geometry, scene, image, text, index, viewport, borderRadius }: any) {
         this.gl = gl;
-        this.image = image;
-        this.index = index;
-        this.length = length;
-        this.renderer = renderer;
+        this.geometry = geometry;
         this.scene = scene;
-        this.screen = screen;
+        this.image = image;
         this.text = text;
+        this.index = index;
         this.viewport = viewport;
-        this.bend = bend;
-        this.textColor = textColor;
-        this.borderRadius = borderRadius;
-        this.font = font;
-        this.onClick = onClick;
-        this.createShader();
-        this.createMesh();
-        this.createTitle();
-        this.onResize();
-    }
 
-    createShader() {
-        const texture = new Texture(this.gl, {
-            generateMipmaps: true,
-            minFilter: this.gl.LINEAR_MIPMAP_LINEAR,
-            magFilter: this.gl.LINEAR,
-            wrapS: this.gl.CLAMP_TO_EDGE,
-            wrapT: this.gl.CLAMP_TO_EDGE,
-            anisotropy: 16
-        });
-        // Vertex shader WITHOUT wave effect - flat position only
-        this.program = new Program(this.gl, {
-            depthTest: false,
-            depthWrite: false,
-            vertex: `
-                precision highp float;
-                attribute vec3 position;
-                attribute vec2 uv;
-                uniform mat4 modelViewMatrix;
-                uniform mat4 projectionMatrix;
-                varying vec2 vUv;
-                void main() {
-                    vUv = uv;
-                    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-                }
-            `,
-            fragment: `
-                precision highp float;
-                uniform vec2 uImageSizes;
-                uniform vec2 uPlaneSizes;
-                uniform sampler2D tMap;
-                uniform float uBorderRadius;
-                varying vec2 vUv;
-                
-                float roundedBoxSDF(vec2 p, vec2 b, float r) {
-                    vec2 d = abs(p) - b;
-                    return length(max(d, vec2(0.0))) + min(max(d.x, d.y), 0.0) - r;
-                }
-                
-                void main() {
-                    vec2 ratio = vec2(
-                        min((uPlaneSizes.x / uPlaneSizes.y) / (uImageSizes.x / uImageSizes.y), 1.0),
-                        min((uPlaneSizes.y / uPlaneSizes.x) / (uImageSizes.y / uImageSizes.x), 1.0)
-                    );
-                    vec2 uv = vec2(
-                        vUv.x * ratio.x + (1.0 - ratio.x) * 0.5,
-                        vUv.y * ratio.y + (1.0 - ratio.y) * 0.5
-                    );
-                    vec4 color = texture2D(tMap, uv);
-                    
-                    float d = roundedBoxSDF(vUv - 0.5, vec2(0.5 - uBorderRadius), uBorderRadius);
-                    
-                    float edgeSmooth = 0.002;
-                    float alpha = 1.0 - smoothstep(-edgeSmooth, edgeSmooth, d);
-                    
-                    gl_FragColor = vec4(color.rgb, alpha);
-                }
-            `,
-            uniforms: {
-                tMap: { value: texture },
-                uPlaneSizes: { value: [0, 0] },
-                uImageSizes: { value: [0, 0] },
-                uBorderRadius: { value: this.borderRadius }
-            },
-            transparent: true
-        });
+        const texture = new Texture(gl, { generateMipmaps: false });
         const img = new Image();
         img.crossOrigin = 'anonymous';
-        img.src = this.image;
+        img.src = image;
         img.onload = () => {
             texture.image = img;
             this.program.uniforms.uImageSizes.value = [img.naturalWidth, img.naturalHeight];
         };
-    }
 
-    createMesh() {
-        this.plane = new Mesh(this.gl, {
-            geometry: this.geometry,
-            program: this.program
+        this.program = new Program(gl, {
+            vertex: vertexShader,
+            fragment: fragmentShader,
+            uniforms: {
+                tMap: { value: texture },
+                uPlaneSizes: { value: [0, 0] },
+                uImageSizes: { value: [0, 0] },
+                uBorderRadius: { value: borderRadius },
+                uBendFactor: { value: 0 },
+            },
+            transparent: true
         });
-        this.plane.setParent(this.scene);
+
+        this.mesh = new Mesh(gl, { geometry: this.geometry, program: this.program });
+        this.mesh.setParent(scene);
     }
 
-    createTitle() {
-        this.title = new Title({
-            gl: this.gl,
-            plane: this.plane,
-            renderer: this.renderer,
-            text: this.text,
-            textColor: this.textColor,
-            font: this.font
-        });
-    }
-
-    handleClick() {
-        if (this.onClick) {
-            this.onClick(this.image, this.text);
-        }
-    }
-
-    update(scroll: { current: number; last: number }, direction: 'right' | 'left') {
-        this.plane.position.x = this.x - scroll.current - this.extra;
-
-        const x = this.plane.position.x;
-        const H = this.viewport.width / 2;
-
-        if (this.bend === 0) {
-            this.plane.position.y = 0;
-            this.plane.rotation.z = 0;
-        } else {
-            const B_abs = Math.abs(this.bend);
-            const R = (H * H + B_abs * B_abs) / (2 * B_abs);
-            const effectiveX = Math.min(Math.abs(x), H);
-
-            const arc = R - Math.sqrt(R * R - effectiveX * effectiveX);
-            if (this.bend > 0) {
-                this.plane.position.y = -arc;
-                this.plane.rotation.z = -Math.sign(x) * Math.asin(effectiveX / R);
-            } else {
-                this.plane.position.y = arc;
-                this.plane.rotation.z = Math.sign(x) * Math.asin(effectiveX / R);
-            }
-        }
-
-        this.speed = scroll.current - scroll.last;
-
-        const planeOffset = this.plane.scale.x / 2;
-        const viewportOffset = this.viewport.width / 2;
-        this.isBefore = this.plane.position.x + planeOffset < -viewportOffset;
-        this.isAfter = this.plane.position.x - planeOffset > viewportOffset;
-        if (direction === 'right' && this.isBefore) {
-            this.extra -= this.widthTotal;
-            this.isBefore = this.isAfter = false;
-        }
-        if (direction === 'left' && this.isAfter) {
-            this.extra += this.widthTotal;
-            this.isBefore = this.isAfter = false;
-        }
-    }
-
-    onResize({ screen, viewport }: { screen?: ScreenSize; viewport?: Viewport } = {}) {
-        if (screen) this.screen = screen;
-        if (viewport) {
-            this.viewport = viewport;
-        }
-        this.scale = this.screen.height / 1500;
-        this.plane.scale.y = (this.viewport.height * (900 * this.scale)) / this.screen.height;
-        this.plane.scale.x = (this.viewport.width * (700 * this.scale)) / this.screen.width;
-        this.plane.program.uniforms.uPlaneSizes.value = [this.plane.scale.x, this.plane.scale.y];
-        this.padding = 5;
-        this.width = this.plane.scale.x + this.padding;
-        this.widthTotal = this.width * this.length;
+    resize(viewport: { width: number, height: number }, screen: { width: number, height: number }) {
+        this.viewport = viewport;
+        const scale = screen.height / 1500;
+        this.mesh.scale.x = (viewport.width * (700 * scale)) / screen.width;
+        this.mesh.scale.y = (viewport.height * (900 * scale)) / screen.height;
+        
+        this.program.uniforms.uPlaneSizes.value = [this.mesh.scale.x, this.mesh.scale.y];
+        
+        const gap = 1.5; 
+        this.width = this.mesh.scale.x + gap;
         this.x = this.width * this.index;
     }
+
+    update(scroll: number, direction: number, length: number) {
+        this.widthTotal = this.width * length;
+        this.mesh.position.x = this.x - scroll - this.extra;
+        
+        const planeOffset = this.mesh.scale.x / 2;
+        const viewportOffset = this.viewport.width / 2;
+        
+        if (direction === 1 && this.mesh.position.x + planeOffset < -viewportOffset) {
+            this.extra -= this.widthTotal;
+        } else if (direction === -1 && this.mesh.position.x - planeOffset > viewportOffset) {
+            this.extra += this.widthTotal;
+        }
+    }
+
+    hitTest(mouseNdcX: number, mouseNdcY: number) {
+        const halfWidth = this.mesh.scale.x / 2;
+        const halfHeight = this.mesh.scale.y / 2;
+        const posX = this.mesh.position.x;
+        const posY = 0; 
+
+        return (
+            mouseNdcX >= posX - halfWidth &&
+            mouseNdcX <= posX + halfWidth &&
+            mouseNdcY >= posY - halfHeight &&
+            mouseNdcY <= posY + halfHeight
+        );
+    }
 }
 
-interface AppConfig {
-    items?: { image: string; text: string }[];
-    bend?: number;
-    textColor?: string;
-    borderRadius?: number;
-    font?: string;
-    scrollSpeed?: number;
-    scrollEase?: number;
-    onImageClick?: (image: string, text: string) => void;
-}
-
-class App {
-    container: HTMLElement;
-    scrollSpeed: number;
-    scroll: {
-        ease: number;
-        current: number;
-        target: number;
-        last: number;
-        position?: number;
-    };
-    onCheckDebounce: (...args: any[]) => void;
-    renderer!: Renderer;
-    gl!: GL;
-    camera!: Camera;
-    scene!: Transform;
-    planeGeometry!: Plane;
+class WebGLApp {
+    renderer: Renderer;
+    gl: any;
+    camera: Camera;
+    scene: Transform;
+    planeGeometry: Plane;
     medias: Media[] = [];
-    mediasImages: { image: string; text: string }[] = [];
-    screen!: { width: number; height: number };
-    viewport!: { width: number; height: number };
-    raf: number = 0;
-    onImageClick?: (image: string, text: string) => void;
-
-    boundOnResize!: () => void;
-    boundOnWheel!: (e: Event) => void;
-    boundOnTouchDown!: (e: MouseEvent | TouchEvent) => void;
-    boundOnTouchMove!: (e: MouseEvent | TouchEvent) => void;
-    boundOnTouchUp!: (e: MouseEvent | TouchEvent) => void;
-
-    isDown: boolean = false;
-    start: number = 0;
-    startY: number = 0;
-    hasMoved: boolean = false;
+    scroll: { current: number; target: number; last: number; ease: number };
+    touchStart: number = 0;
+    isDragging: boolean = false;
+    hasMoved: boolean = false; 
+    rafId: number = 0;
+    container: HTMLElement;
+    items: any[];
+    bendFactor: number;
+    viewport: { width: number, height: number } = { width: 0, height: 0 };
+    onImageClick: (image: string, text: string) => void;
 
     constructor(
-        container: HTMLElement,
-        {
-            items,
-            bend = 1,
-            textColor = '#ffffff',
-            borderRadius = 0,
-            font = 'bold 30px DM Sans',
-            scrollSpeed = 2,
-            scrollEase = 0.05,
-            onImageClick
-        }: AppConfig
+        container: HTMLElement, 
+        config: {
+            items: any[], 
+            bendFactor: number,
+            onImageClick: (image: string, text: string) => void
+        }
     ) {
-        document.documentElement.classList.remove('no-js');
         this.container = container;
-        this.scrollSpeed = scrollSpeed;
-        this.scroll = { ease: scrollEase, current: 0, target: 0, last: 0 };
-        this.onCheckDebounce = debounce(this.onCheck.bind(this), 200);
-        this.onImageClick = onImageClick;
-        this.createRenderer();
-        this.createCamera();
-        this.createScene();
-        this.onResize();
-        this.createGeometry();
-        this.createMedias(items, bend, textColor, borderRadius, font);
-        this.update();
-        this.addEventListeners();
-    }
+        this.items = config.items;
+        this.bendFactor = config.bendFactor * 0.001; 
+        this.onImageClick = config.onImageClick;
 
-    createRenderer() {
-        this.renderer = new Renderer({
-            alpha: true,
-            antialias: true,
-            dpr: Math.min(window.devicePixelRatio || 1, 3),
-            powerPreference: 'high-performance'
-        });
+        this.renderer = new Renderer({ alpha: true, dpr: Math.min(window.devicePixelRatio, 2) });
         this.gl = this.renderer.gl;
         this.gl.clearColor(0, 0, 0, 0);
-        this.container.appendChild(this.renderer.gl.canvas as HTMLCanvasElement);
-    }
+        container.appendChild(this.gl.canvas);
 
-    createCamera() {
         this.camera = new Camera(this.gl);
         this.camera.fov = 45;
         this.camera.position.z = 20;
-    }
 
-    createScene() {
         this.scene = new Transform();
+        this.planeGeometry = new Plane(this.gl, { widthSegments: 20, heightSegments: 10 });
+
+        this.scroll = { current: 0, target: 0, last: 0, ease: 0.05 };
+        
+        this.initMedias();
+        this.resize();
+        this.addEvents();
+        this.update();
     }
 
-    createGeometry() {
-        this.planeGeometry = new Plane(this.gl, {
-            heightSegments: 10,
-            widthSegments: 20
-        });
-    }
-
-    createMedias(
-        items: { image: string; text: string }[] | undefined,
-        bend: number = 1,
-        textColor: string,
-        borderRadius: number,
-        font: string
-    ) {
-        const defaultItems = [
-            { image: `https://picsum.photos/seed/1/800/600`, text: 'Certificate 1' },
-            { image: `https://picsum.photos/seed/2/800/600`, text: 'Certificate 2' },
-            { image: `https://picsum.photos/seed/3/800/600`, text: 'Certificate 3' },
-            { image: `https://picsum.photos/seed/4/800/600`, text: 'Certificate 4' },
-            { image: `https://picsum.photos/seed/5/800/600`, text: 'Certificate 5' },
-        ];
-        const galleryItems = items && items.length ? items : defaultItems;
-        this.mediasImages = galleryItems.concat(galleryItems);
-        this.medias = this.mediasImages.map((data, index) => {
+    initMedias() {
+        const doubleItems = [...this.items, ...this.items]; 
+        this.medias = doubleItems.map((data, index) => {
             return new Media({
-                geometry: this.planeGeometry,
                 gl: this.gl,
-                image: data.image,
-                index,
-                length: this.mediasImages.length,
-                renderer: this.renderer,
+                geometry: this.planeGeometry,
                 scene: this.scene,
-                screen: this.screen,
+                image: data.image,
                 text: data.text,
-                viewport: this.viewport,
-                bend,
-                textColor,
-                borderRadius,
-                font,
-                onClick: this.onImageClick
+                index,
+                viewport: { width: 0, height: 0 },
+                borderRadius: 0.05
             });
         });
     }
 
-    onTouchDown(e: MouseEvent | TouchEvent) {
-        this.isDown = true;
+    resize() {
+        const width = this.container.clientWidth;
+        const height = this.container.clientHeight;
+        this.renderer.setSize(width, height);
+        this.camera.perspective({ aspect: width / height });
+
+        const fov = (this.camera.fov * Math.PI) / 180;
+        const viewHeight = 2 * Math.tan(fov / 2) * this.camera.position.z;
+        const viewWidth = viewHeight * this.camera.aspect;
+
+        this.viewport = { width: viewWidth, height: viewHeight };
+        this.medias.forEach(media => media.resize(this.viewport, { width, height }));
+    }
+
+    onTouchDown = (e: TouchEvent | MouseEvent) => {
+        this.isDragging = true;
         this.hasMoved = false;
-        this.scroll.position = this.scroll.current;
-        this.start = 'touches' in e ? e.touches[0].clientX : e.clientX;
-        this.startY = 'touches' in e ? e.touches[0].clientY : e.clientY;
-    }
+        this.touchStart = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    };
 
-    onTouchMove(e: MouseEvent | TouchEvent) {
-        if (!this.isDown) return;
+    onTouchMove = (e: TouchEvent | MouseEvent) => {
+        if (!this.isDragging) return;
         const x = 'touches' in e ? e.touches[0].clientX : e.clientX;
-        const y = 'touches' in e ? e.touches[0].clientY : e.clientY;
-        const distance = (this.start - x) * (this.scrollSpeed * 0.025);
+        
+        // --- CAMBIO AQUÍ: AUMENTADO DE 2.5 A 6.0 PARA MAYOR VELOCIDAD ---
+        const dist = (this.touchStart - x) * 6.0; 
+        
+        if(Math.abs(dist) > 2) this.hasMoved = true;
 
-        if (Math.abs(this.start - x) > 5 || Math.abs(this.startY - y) > 5) {
-            this.hasMoved = true;
-        }
+        this.scroll.target += dist * 0.01;
+        this.touchStart = x;
+    };
 
-        this.scroll.target = (this.scroll.position ?? 0) + distance;
-    }
-
-    onTouchUp(e: MouseEvent | TouchEvent) {
-        if (!this.hasMoved && this.onImageClick) {
+    onTouchUp = (e: TouchEvent | MouseEvent) => {
+        this.isDragging = false;
+        
+        if (!this.hasMoved) {
             const clientX = 'changedTouches' in e ? e.changedTouches[0].clientX : e.clientX;
             const clientY = 'changedTouches' in e ? e.changedTouches[0].clientY : e.clientY;
-
+            
             const rect = this.container.getBoundingClientRect();
-            const x = ((clientX - rect.left) / rect.width) * 2 - 1;
-            const y = -(((clientY - rect.top) / rect.height) * 2 - 1);
+            const ndcX = ((clientX - rect.left) / rect.width) * 2 - 1;
+            const ndcY = -(((clientY - rect.top) / rect.height) * 2 - 1);
+            
+            const worldX = ndcX * (this.viewport.width / 2);
+            const worldY = ndcY * (this.viewport.height / 2);
 
             for (const media of this.medias) {
-                const planeX = media.plane.position.x;
-                const planeY = media.plane.position.y;
-                const halfWidth = media.plane.scale.x / 2;
-                const halfHeight = media.plane.scale.y / 2;
-
-                const ndcX = planeX / (this.viewport.width / 2);
-                const ndcY = planeY / (this.viewport.height / 2);
-                const ndcHalfW = halfWidth / (this.viewport.width / 2);
-                const ndcHalfH = halfHeight / (this.viewport.height / 2);
-
-                if (
-                    x >= ndcX - ndcHalfW &&
-                    x <= ndcX + ndcHalfW &&
-                    y >= ndcY - ndcHalfH &&
-                    y <= ndcY + ndcHalfH
-                ) {
-                    media.handleClick();
+                if (media.hitTest(worldX, worldY)) {
+                    this.onImageClick(media.image, media.text);
                     break;
                 }
             }
         }
+    };
 
-        this.isDown = false;
-        this.onCheck();
-    }
+    onWheel = (e: WheelEvent) => {
+        this.scroll.target += e.deltaY * 0.005;
+    };
 
-    onWheel(e: Event) {
-        const wheelEvent = e as WheelEvent;
-        const delta = wheelEvent.deltaY || (wheelEvent as any).wheelDelta || (wheelEvent as any).detail;
-        this.scroll.target += (delta > 0 ? this.scrollSpeed : -this.scrollSpeed) * 0.2;
-        this.onCheckDebounce();
-    }
+    addEvents() {
+        window.addEventListener('resize', this.resize.bind(this));
+        
+        this.container.addEventListener('mousedown', this.onTouchDown);
+        window.addEventListener('mousemove', this.onTouchMove);
+        window.addEventListener('mouseup', this.onTouchUp);
 
-    onCheck() {
-        if (!this.medias || !this.medias[0]) return;
-        const width = this.medias[0].width;
-        const itemIndex = Math.round(Math.abs(this.scroll.target) / width);
-        const item = width * itemIndex;
-        this.scroll.target = this.scroll.target < 0 ? -item : item;
-    }
-
-    onResize() {
-        this.screen = {
-            width: this.container.clientWidth,
-            height: this.container.clientHeight
-        };
-        this.renderer.setSize(this.screen.width, this.screen.height);
-        this.camera.perspective({
-            aspect: this.screen.width / this.screen.height
-        });
-        const fov = (this.camera.fov * Math.PI) / 180;
-        const height = 2 * Math.tan(fov / 2) * this.camera.position.z;
-        const width = height * this.camera.aspect;
-        this.viewport = { width, height };
-        if (this.medias) {
-            this.medias.forEach(media => media.onResize({ screen: this.screen, viewport: this.viewport }));
-        }
+        this.container.addEventListener('touchstart', this.onTouchDown, { passive: true });
+        this.container.addEventListener('touchmove', this.onTouchMove, { passive: true });
+        window.addEventListener('touchend', this.onTouchUp);
+        
+        this.container.addEventListener('wheel', this.onWheel, { passive: true });
     }
 
     update() {
         this.scroll.current = lerp(this.scroll.current, this.scroll.target, this.scroll.ease);
-        const direction = this.scroll.current > this.scroll.last ? 'right' : 'left';
-        if (this.medias) {
-            this.medias.forEach(media => media.update(this.scroll, direction));
-        }
-        this.renderer.render({ scene: this.scene, camera: this.camera });
-        this.scroll.last = this.scroll.current;
-        this.raf = window.requestAnimationFrame(this.update.bind(this));
-    }
+        const direction = this.scroll.current > this.scroll.last ? 1 : -1;
+        
+        // Curvatura estática
+        const currentBend = this.bendFactor; 
 
-    addEventListeners() {
-        this.boundOnResize = this.onResize.bind(this);
-        this.boundOnWheel = this.onWheel.bind(this);
-        this.boundOnTouchDown = this.onTouchDown.bind(this);
-        this.boundOnTouchMove = this.onTouchMove.bind(this);
-        this.boundOnTouchUp = this.onTouchUp.bind(this);
-        window.addEventListener('resize', this.boundOnResize);
-        this.container.addEventListener('mousewheel', this.boundOnWheel);
-        this.container.addEventListener('wheel', this.boundOnWheel);
-        this.container.addEventListener('mousedown', this.boundOnTouchDown);
-        this.container.addEventListener('mousemove', this.boundOnTouchMove);
-        this.container.addEventListener('mouseup', this.boundOnTouchUp);
-        this.container.addEventListener('touchstart', this.boundOnTouchDown);
-        this.container.addEventListener('touchmove', this.boundOnTouchMove);
-        this.container.addEventListener('touchend', this.boundOnTouchUp);
+        if(this.medias.length > 0){
+             this.medias.forEach(media => {
+                 media.update(this.scroll.current, direction, this.medias.length);
+                 media.program.uniforms.uBendFactor.value = currentBend;
+             });
+        }
+
+        this.scroll.last = this.scroll.current;
+        this.renderer.render({ scene: this.scene, camera: this.camera });
+        this.rafId = requestAnimationFrame(this.update.bind(this));
     }
 
     destroy() {
-        window.cancelAnimationFrame(this.raf);
-        window.removeEventListener('resize', this.boundOnResize);
-        this.container.removeEventListener('mousewheel', this.boundOnWheel);
-        this.container.removeEventListener('wheel', this.boundOnWheel);
-        this.container.removeEventListener('mousedown', this.boundOnTouchDown);
-        this.container.removeEventListener('mousemove', this.boundOnTouchMove);
-        this.container.removeEventListener('mouseup', this.boundOnTouchUp);
-        this.container.removeEventListener('touchstart', this.boundOnTouchDown);
-        this.container.removeEventListener('touchmove', this.boundOnTouchMove);
-        this.container.removeEventListener('touchend', this.boundOnTouchUp);
-        if (this.renderer && this.renderer.gl && this.renderer.gl.canvas.parentNode) {
-            this.renderer.gl.canvas.parentNode.removeChild(this.renderer.gl.canvas as HTMLCanvasElement);
-        }
+        cancelAnimationFrame(this.rafId);
+        window.removeEventListener('resize', this.resize.bind(this));
+        if (this.gl.canvas.parentNode) this.gl.canvas.parentNode.removeChild(this.gl.canvas);
     }
 }
 
+// --- COMPONENTE REACT ---
 interface CertificatesGalleryProps {
     items?: { image: string; text: string }[];
     bend?: number;
@@ -663,147 +338,155 @@ interface CertificatesGalleryProps {
     scrollEase?: number;
 }
 
-export default function CertificatesGallery({
-    items,
+export default function CertificatesGallery({ 
+    items, 
     bend = 3,
     textColor = '#ffffff',
     borderRadius = 0.05,
-    font = 'bold 24px DM Sans',
+    font = 'bold 30px DM Sans',
     scrollSpeed = 2,
     scrollEase = 0.05
 }: CertificatesGalleryProps) {
     const containerRef = useRef<HTMLDivElement>(null);
-    const overlayRef = useRef<HTMLDivElement>(null);
-    const expandedImageRef = useRef<HTMLImageElement>(null);
-    const [expandedImage, setExpandedImage] = useState<{ image: string; text: string } | null>(null);
+    const appRef = useRef<any>(null);
 
+    // --- ESTADO Y REFS PARA EL MODAL ---
+    const [expandedImage, setExpandedImage] = useState<{ image: string; text: string } | null>(null);
+    const overlayRef = useRef<HTMLDivElement>(null);
+    const modalContentRef = useRef<HTMLDivElement>(null);
+    const imageRef = useRef<HTMLImageElement>(null);
+
+    // --- MANEJADORES ---
     const handleImageClick = (image: string, text: string) => {
         setExpandedImage({ image, text });
     };
 
     const handleClose = () => {
-        if (expandedImageRef.current && overlayRef.current) {
-            gsap.to(expandedImageRef.current, {
-                scale: 0.8,
-                opacity: 0,
-                duration: 0.4,
-                ease: "power2.inOut"
-            });
-            gsap.to(overlayRef.current, {
+        // Animación de SALIDA
+        const tl = gsap.timeline({
+            onComplete: () => setExpandedImage(null)
+        });
+
+        if (overlayRef.current && modalContentRef.current) {
+            tl.to(overlayRef.current, {
                 opacity: 0,
                 duration: 0.3,
-                ease: "power2.inOut",
-                onComplete: () => setExpandedImage(null)
-            });
+                ease: "power2.inOut"
+            }, 0);
+
+            tl.to(modalContentRef.current, {
+                scale: 0.8,
+                opacity: 0,
+                y: 20,
+                duration: 0.3,
+                ease: "power2.inOut"
+            }, 0);
         } else {
             setExpandedImage(null);
         }
     };
 
+    // --- EFECTO DE ANIMACIÓN DE ENTRADA ---
     useEffect(() => {
-        if (expandedImage && expandedImageRef.current && overlayRef.current) {
-            gsap.fromTo(overlayRef.current,
-                { opacity: 0 },
-                { opacity: 1, duration: 0.3, ease: "power2.out" }
-            );
-            gsap.fromTo(expandedImageRef.current,
-                { scale: 0.8, opacity: 0 },
-                { scale: 1, opacity: 1, duration: 0.5, ease: "power3.out" }
-            );
+        if (expandedImage && overlayRef.current && modalContentRef.current) {
+            gsap.set(overlayRef.current, { opacity: 0 });
+            gsap.set(modalContentRef.current, { opacity: 0, scale: 0.8, y: 20 });
+
+            const tl = gsap.timeline();
+
+            tl.to(overlayRef.current, {
+                opacity: 1,
+                duration: 0.4,
+                ease: "power2.out"
+            });
+
+            tl.to(modalContentRef.current, {
+                opacity: 1,
+                scale: 1,
+                y: 0,
+                duration: 0.5,
+                ease: "back.out(1.2)", 
+            }, "-=0.3");
         }
     }, [expandedImage]);
 
+    // --- INICIALIZACIÓN DE WEBGL ---
     useEffect(() => {
         if (!containerRef.current) return;
-        const app = new App(containerRef.current, {
-            items,
-            bend,
-            textColor,
-            borderRadius,
-            font,
-            scrollSpeed,
-            scrollEase,
-            onImageClick: handleImageClick
+        
+        const app = new WebGLApp(containerRef.current, { 
+            items: items || [], 
+            bendFactor: bend, 
+            onImageClick: handleImageClick 
         });
+        
+        appRef.current = app;
+
         return () => {
             app.destroy();
         };
-    }, [items, bend, textColor, borderRadius, font, scrollSpeed, scrollEase]);
+    }, [items, bend]);
 
+    // Cerrar con tecla ESC
     useEffect(() => {
-        const handleEscape = (e: KeyboardEvent) => {
-            if (e.key === 'Escape' && expandedImage) {
-                handleClose();
-            }
+        const handleEsc = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') handleClose();
         };
-        window.addEventListener('keydown', handleEscape);
-        return () => window.removeEventListener('keydown', handleEscape);
-    }, [expandedImage]);
+        window.addEventListener('keydown', handleEsc);
+        return () => window.removeEventListener('keydown', handleEsc);
+    }, []);
 
     return (
         <>
             <div className="relative w-full h-full">
-                {/* Fade left – solo desktop */}
-                <div className="hidden lg:flex absolute left-0 top-0 bottom-0 z-10 pointer-events-none">
-                    {/* Negro sólido */}
-                    <div className="w-16 bg-black" />
-
-                    {/* Fade */}
-                    <div className="w-40 bg-gradient-to-r from-black to-transparent" />
-                </div>
-
-                {/* Fade right – solo desktop */}
-                <div className="hidden lg:flex absolute right-0 top-0 bottom-0 z-10 pointer-events-none">
-                    {/* Fade */}
-                    <div className="w-40 bg-gradient-to-l from-black to-transparent" />
-
-                    {/* Negro sólido */}
-                    <div className="w-16 bg-black" />
-                </div>
-
-                <div
-                    className="w-full h-full overflow-hidden cursor-grab active:cursor-grabbing"
-                    ref={containerRef}
+                <div className="hidden lg:flex absolute left-0 top-0 bottom-0 z-10 pointer-events-none w-32 bg-linear-to-r from-black to-transparent" />
+                <div className="hidden lg:flex absolute right-0 top-0 bottom-0 z-10 pointer-events-none w-32 bg-linear-to-l from-black to-transparent" />
+                
+                <div 
+                    className="w-full h-full overflow-hidden cursor-grab active:cursor-grabbing" 
+                    ref={containerRef} 
                 />
             </div>
 
-
-            {/* Expanded Image Modal */}
             {expandedImage && (
-                <>
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-8">
                     <div
                         ref={overlayRef}
-                        className="fixed inset-0 bg-black/90 z-[100] cursor-pointer"
+                        className="absolute inset-0 bg-black/90 backdrop-blur-sm cursor-pointer"
                         onClick={handleClose}
                     />
+
                     <div
-                        className="fixed inset-0 z-[101] flex items-center justify-center p-8 pointer-events-none"
+                        ref={modalContentRef}
+                        className="relative z-10 max-w-5xl w-full max-h-[90vh] flex flex-col items-center pointer-events-none"
                     >
-                        <div className="relative max-w-2xl w-full pointer-events-auto">
-                            <button
-                                onClick={handleClose}
-                                className="absolute -top-12 right-0 text-white/60 hover:text-white transition-colors flex items-center gap-2"
-                            >
-                                <span className="text-sm uppercase tracking-widest font-mono">Close</span>
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                            </button>
+                        <button
+                            onClick={handleClose}
+                            className="pointer-events-auto absolute -top-12 right-0 text-white/50 hover:text-white transition-colors duration-300 group flex items-center gap-2"
+                        >
+                            <span className="text-sm font-mono tracking-widest opacity-0 group-hover:opacity-100 transition-opacity translate-x-2 group-hover:translate-x-0">CLOSE</span>
+                            <div className="p-2 border border-white/20 rounded-full group-hover:border-white/80 transition-colors">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                            </div>
+                        </button>
 
-                            <img
-                                ref={expandedImageRef}
-                                src={expandedImage.image}
-                                alt={expandedImage.text}
-                                className="w-full h-auto rounded-2xl shadow-2xl"
-                                style={{ boxShadow: '0 25px 80px -20px rgba(0, 0, 0, 0.5)' }}
-                            />
+                        <img
+                            ref={imageRef}
+                            src={expandedImage.image}
+                            alt={expandedImage.text}
+                            className="pointer-events-auto w-auto max-h-[70vh] object-contain rounded-lg shadow-2xl shadow-purple-900/20 border border-white/10"
+                        />
 
-                            <h3 className="text-center text-white text-2xl md:text-3xl font-bold mt-6 uppercase tracking-wide">
+                        <div className="mt-6 text-center">
+                            <h3 className="text-2xl md:text-3xl font-bold text-white tracking-tight">
                                 {expandedImage.text}
                             </h3>
+                            <p className="text-purple-400 font-mono text-sm mt-2 uppercase tracking-widest opacity-80">
+                                Certificado Oficial
+                            </p>
                         </div>
                     </div>
-                </>
+                </div>
             )}
         </>
     );
