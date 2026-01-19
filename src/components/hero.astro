@@ -1,0 +1,111 @@
+---
+import LightRays from "../components/ReactBits/LightRays.tsx";
+import TechLogoLoop from "../components/ReactBits/TechLogoLoop.tsx";
+---
+
+<section
+  id="hero"
+  class="relative h-screen overflow-hidden bg-black font-['Inter']"
+>
+  <!-- Light Rays Background -->
+  <div class="absolute inset-0 -z-10">
+    <LightRays
+      client:only="react"
+      raysOrigin="top-right"
+      raysColor="#8b5cf6"
+      raysSpeed={1.2}
+      lightSpread={2}
+      rayLength={2}
+      followMouse={true}
+      mouseInfluence={0.1}
+      noiseAmount={0.05}
+      distortion={0.03}
+    />
+  </div>
+
+  <!-- Contenido -->
+  <div
+    class="relative z-10 grid h-full grid-cols-1 md:grid-cols-2 items-center px-8 md:px-24"
+  >
+    <!-- IMAGEN -->
+    <div
+      id="hero-image"
+      class="relative hidden md:flex justify-center items-center order-1 mr-10 opacity-0"
+    >
+      <div class="relative">
+        <img
+          src="/images/hero.png"
+          alt="Portrait"
+          class="w-87.5 lg:w-105 xl:w-120 h-auto object-contain relative z-10"
+        />
+      </div>
+    </div>
+
+    <!-- TEXTO -->
+    <div class="space-y-5 order-2 mt-10">
+      <!-- Badge -->
+      <div
+        data-hero-animate
+        class="inline-flex items-center gap-2 px-4 py-1 rounded-full border border-white/10 bg-white/5 opacity-0"
+      >
+        <span class="relative flex h-2 w-2">
+          <span
+            class="absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75 animate-ping"
+          ></span>
+          <span class="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"
+          ></span>
+        </span>
+        <span class="text-[0.65rem] tracking-[0.3em] uppercase text-white/60">
+          Available for work
+        </span>
+      </div>
+
+      <!-- TITULO -->
+      <h1 class="leading-[0.5] tracking-tight">
+        <span
+          data-hero-animate
+          class="block text-6xl md:text-7xl xl:text-8xl font-black text-white opacity-0"
+        >
+          Software
+        </span>
+        <span
+          data-hero-animate
+          class="block text-6xl md:text-7xl xl:text-8xl font-black bg-linear-to-r from-indigo-400 via-purple-500 to-pink-500 bg-clip-text text-transparent opacity-0 pb-5"
+        >
+          Engineer
+        </span>
+      </h1>
+
+      <p
+        data-hero-animate
+        class="text-white/50 max-w-xl leading-relaxed opacity-0"
+      >
+        Specializing in building scalable, full-stack applications. I bridge the
+        gap between high-performance back-end systems and immersive, cinematic
+        front-end experiences.
+      </p>
+
+      <!-- LogoLoop - Tech Stack -->
+      <div data-hero-animate class="max-w-md mt- opacity-0 min-h-11">
+        <TechLogoLoop client:only="react" />
+      </div>
+
+      <!-- Botones -->
+      <div data-hero-animate class="flex gap-4 pt-4 opacity-0">
+        <a
+          href="#projects"
+          class="px-7 py-3 rounded-xl bg-linear-to-r from-indigo-500 to-purple-600 text-white font-semibold shadow-xl shadow-indigo-500/30 transition hover:scale-105"
+        >
+          View Work
+        </a>
+
+        <a
+          href="#contact"
+          class="px-7 py-3 rounded-xl border border-white/15 bg-white/5 text-white font-semibold hover:bg-white/10 transition"
+        >
+          Contact
+        </a>
+      </div>
+    </div>
+  </div>
+</section>

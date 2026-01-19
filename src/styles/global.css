@@ -1,0 +1,19 @@
+@import "tailwindcss";
+
+/* Reset básico */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+}
+
+/* Clase para navbar con blur al hacer scroll */
+.nav-scrolled {
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(10px);
+}

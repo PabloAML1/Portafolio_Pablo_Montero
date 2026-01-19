@@ -1,0 +1,251 @@
+---
+import { ViewTransitions } from "astro:transitions";
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const {
+  title = "Pablo - Software Engineer Portfolio",
+  description = "Portfolio profesional de Pablo, Estudiante de Ingeniería en Software",
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="description" content={description} />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=DM+Serif+Display&display=swap"
+      rel="stylesheet"
+    />
+
+    <title>{title}</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- View Transitions -->
+    <ViewTransitions />
+
+    <style is:global>
+      /* Custom animation for project image expansion */
+      @keyframes project-image-expand {
+        from {
+          clip-path: inset(0 0 0 0 round 12px);
+        }
+        to {
+          clip-path: inset(0 0 0 0 round 0px);
+        }
+      }
+
+      @keyframes project-image-shrink {
+        from {
+          clip-path: inset(0 0 0 0 round 0px);
+        }
+        to {
+          clip-path: inset(0 0 0 0 round 12px);
+        }
+      }
+
+      ::view-transition-old(project-image) {
+        animation: 0.5s ease-out both project-image-shrink;
+      }
+
+      ::view-transition-new(project-image) {
+        animation: 0.5s ease-out both project-image-expand;
+      }
+
+      /* Fade animation for content */
+      @keyframes fade-in {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes fade-out {
+        from {
+          opacity: 1;
+          transform: translateY(0);
+        }
+        to {
+          opacity: 0;
+          transform: translateY(-20px);
+        }
+      }
+
+      ::view-transition-old(root) {
+        animation: 0.3s ease-out both fade-out;
+      }
+
+      ::view-transition-new(root) {
+        animation: 0.4s ease-out 0.1s both fade-in;
+      }
+    </style>
+  </head>
+
+  <body class="bg-black text-white overflow-x-hidden relative font-['Inter']">
+    <!-- NAVBAR -->
+    <nav
+      id="main-nav"
+      class="fixed top-0 left-0 w-full z-1000 text-white font-['Inter'] isolate transition-all duration-400 opacity-0"
+    >
+      <div
+        class="max-w-375 mx-auto px-6 md:px-12 py-4 md:py-6 flex justify-between items-center"
+      >
+        <div
+          class="flex gap-4 md:gap-6 items-baseline uppercase tracking-[0.12em]"
+        >
+          <a href="/">
+            <span
+              class="font-['DM_Serif_Display'] text-sm md:text-base font-normal text-white"
+              >Pablo Montero</span
+            >
+          </a>
+        </div>
+
+        <!-- Desktop Menu -->
+        <ul
+          class="hidden md:flex gap-8 lg:gap-12 list-none uppercase tracking-[0.12em] text-xs"
+        >
+          <li>
+            <a
+              class="inline-flex items-center justify-center px-3.5 py-2 rounded-full text-xs font-medium tracking-[0.12em] uppercase text-white/70 no-underline transition-all duration-250 hover:bg-white/6 hover:text-white active:scale-[0.96]"
+              href="#about">about</a
+            >
+          </li>
+          <li>
+            <a
+              class="inline-flex items-center justify-center px-3.5 py-2 rounded-full text-xs font-medium tracking-[0.12em] uppercase text-white/70 no-underline transition-all duration-250 hover:bg-white/6 hover:text-white active:scale-[0.96]"
+              href="#projects">projects</a
+            >
+          </li>
+          <li>
+            <a
+              class="inline-flex items-center justify-center px-3.5 py-2 rounded-full text-xs font-medium tracking-[0.12em] uppercase text-white/70 no-underline transition-all duration-250 hover:bg-white/6 hover:text-white active:scale-[0.96]"
+              href="#certificates">certificates</a
+            >
+          </li>
+          <li>
+            <a
+              class="inline-flex items-center justify-center px-3.5 py-2 rounded-full text-xs font-medium tracking-[0.12em] uppercase text-white/70 no-underline transition-all duration-250 hover:bg-white/6 hover:text-white active:scale-[0.96]"
+              href="#skills">skills</a
+            >
+          </li>
+          <li>
+            <a
+              class="inline-flex items-center justify-center px-3.5 py-2 rounded-full text-xs font-medium tracking-[0.12em] uppercase text-white/70 no-underline transition-all duration-250 hover:bg-white/6 hover:text-white active:scale-[0.96]"
+              href="#contact">contact</a
+            >
+          </li>
+        </ul>
+
+        <!-- Hamburger Button (Mobile) -->
+        <button
+          id="menu-toggle"
+          class="md:hidden flex flex-col justify-center items-center w-10 h-10 rounded-lg bg-white/5 border border-white/10 transition-all duration-300 hover:bg-white/10"
+          aria-label="Toggle menu"
+          aria-expanded="false"
+        >
+          <span
+            class="hamburger-line w-5 h-0.5 bg-white rounded-full transition-all duration-300 origin-center"
+          ></span>
+          <span
+            class="hamburger-line w-5 h-0.5 bg-white rounded-full transition-all duration-300 origin-center mt-1.5"
+          ></span>
+          <span
+            class="hamburger-line w-5 h-0.5 bg-white rounded-full transition-all duration-300 origin-center mt-1.5"
+          ></span>
+        </button>
+      </div>
+
+      <!-- Mobile Menu -->
+      <div
+        id="mobile-menu"
+        class="md:hidden fixed inset-0 top-60 bg-black/95 backdrop-blur-xl z-999 translate-x-full transition-transform duration-400 ease-out"
+      >
+        <ul
+          class="flex flex-col items-center justify-center h-full gap-8 list-none"
+        >
+          <li>
+            <a
+              class="mobile-link text-2xl font-medium tracking-[0.12em] uppercase text-white/80 no-underline transition-all duration-300 hover:text-white"
+              href="#about">about</a
+            >
+          </li>
+          <li>
+            <a
+              class="mobile-link text-2xl font-medium tracking-[0.12em] uppercase text-white/80 no-underline transition-all duration-300 hover:text-white"
+              href="#projects">projects</a
+            >
+          </li>
+          <li>
+            <a
+              class="mobile-link text-2xl font-medium tracking-[0.12em] uppercase text-white/80 no-underline transition-all duration-300 hover:text-white"
+              href="#certificates">certificates</a
+            >
+          </li>
+          <li>
+            <a
+              class="mobile-link text-2xl font-medium tracking-[0.12em] uppercase text-white/80 no-underline transition-all duration-300 hover:text-white"
+              href="#skills">skills</a
+            >
+          </li>
+          <li>
+            <a
+              class="mobile-link text-2xl font-medium tracking-[0.12em] uppercase text-white/80 no-underline transition-all duration-300 hover:text-white"
+              href="#contact">contact</a
+            >
+          </li>
+        </ul>
+      </div>
+
+      <div class="max-w-375 mx-auto px-6 md:px-12">
+        <div class="w-full h-px bg-white/25"></div>
+      </div>
+
+      <div class="max-w-375 mx-auto px-6 md:px-12">
+        <div class="w-full h-px bg-white/8">
+          <div
+            id="scroll-progress"
+            class="h-full w-0 bg-white transition-[width] duration-100 ease-linear"
+          >
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Overlay de blur para móvil -->
+    <div
+      id="menu-overlay"
+      class="fixed inset-0 z-50 bg-black/60 backdrop-blur-md opacity-0 pointer-events-none transition-opacity duration-400 md:hidden"
+    >
+    </div>
+
+    <!-- CONTENIDO DE LA PÁGINA -->
+    <main class="relative z-10">
+      <slot />
+    </main>
+
+    <!-- Scripts normales (NO React aquí) -->
+    <script>
+      import "../scripts/animations";
+      import "../scripts/navbar";
+    </script>
+  </body>
+</html>

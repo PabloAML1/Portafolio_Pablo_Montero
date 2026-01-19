@@ -1,0 +1,25 @@
+---
+import { ProjectsPlaylist } from "./ReactBits/ProjectsPlaylist";
+---
+
+<section
+  id="projects"
+  class="relative min-h-screen bg-black px-8 md:px-24"
+>
+  <!-- Background gradient -->
+  <div
+    class="absolute inset-0 bg-linear-to-b from-black via-purple-950/10 to-black pointer-events-none"
+  >
+  </div>
+
+  <!-- Content -->
+  <div class="relative z-10">
+    <ProjectsPlaylist client:visible />
+  </div>
+</section>
+
+<style>
+  #projects {
+    position: relative;
+  }
+</style>
