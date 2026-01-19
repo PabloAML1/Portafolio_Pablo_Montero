@@ -11,10 +11,3 @@ body {
   margin: 0;
   padding: 0;
 }
-
-/* Clase para navbar con blur al hacer scroll */
-.nav-scrolled {
-  background-color: rgba(0, 0, 0, 0.01); /* casi invisible */
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-}

@@ -123,10 +123,10 @@ class Media {
         const scale = screen.height / 1500;
         this.mesh.scale.x = (viewport.width * (700 * scale)) / screen.width;
         this.mesh.scale.y = (viewport.height * (900 * scale)) / screen.height;
-        
+
         this.program.uniforms.uPlaneSizes.value = [this.mesh.scale.x, this.mesh.scale.y];
-        
-        const gap = 1.5; 
+
+        const gap = 1.5;
         this.width = this.mesh.scale.x + gap;
         this.x = this.width * this.index;
     }
@@ -134,10 +134,10 @@ class Media {
     update(scroll: number, direction: number, length: number) {
         this.widthTotal = this.width * length;
         this.mesh.position.x = this.x - scroll - this.extra;
-        
+
         const planeOffset = this.mesh.scale.x / 2;
         const viewportOffset = this.viewport.width / 2;
-        
+
         if (direction === 1 && this.mesh.position.x + planeOffset < -viewportOffset) {
             this.extra -= this.widthTotal;
         } else if (direction === -1 && this.mesh.position.x - planeOffset > viewportOffset) {
@@ -149,7 +149,7 @@ class Media {
         const halfWidth = this.mesh.scale.x / 2;
         const halfHeight = this.mesh.scale.y / 2;
         const posX = this.mesh.position.x;
-        const posY = 0; 
+        const posY = 0;
 
         return (
             mouseNdcX >= posX - halfWidth &&
@@ -170,7 +170,7 @@ class WebGLApp {
     scroll: { current: number; target: number; last: number; ease: number };
     touchStart: number = 0;
     isDragging: boolean = false;
-    hasMoved: boolean = false; 
+    hasMoved: boolean = false;
     rafId: number = 0;
     container: HTMLElement;
     items: any[];
@@ -179,16 +179,16 @@ class WebGLApp {
     onImageClick: (image: string, text: string) => void;
 
     constructor(
-        container: HTMLElement, 
+        container: HTMLElement,
         config: {
-            items: any[], 
+            items: any[],
             bendFactor: number,
             onImageClick: (image: string, text: string) => void
         }
     ) {
         this.container = container;
         this.items = config.items;
-        this.bendFactor = config.bendFactor * 0.001; 
+        this.bendFactor = config.bendFactor * 0.001;
         this.onImageClick = config.onImageClick;
 
         this.renderer = new Renderer({ alpha: true, dpr: Math.min(window.devicePixelRatio, 2) });
@@ -204,7 +204,7 @@ class WebGLApp {
         this.planeGeometry = new Plane(this.gl, { widthSegments: 20, heightSegments: 10 });
 
         this.scroll = { current: 0, target: 0, last: 0, ease: 0.05 };
-        
+
         this.initMedias();
         this.resize();
         this.addEvents();
@@ -212,7 +212,7 @@ class WebGLApp {
     }
 
     initMedias() {
-        const doubleItems = [...this.items, ...this.items]; 
+        const doubleItems = [...this.items, ...this.items];
         this.medias = doubleItems.map((data, index) => {
             return new Media({
                 gl: this.gl,
@@ -250,11 +250,11 @@ class WebGLApp {
     onTouchMove = (e: TouchEvent | MouseEvent) => {
         if (!this.isDragging) return;
         const x = 'touches' in e ? e.touches[0].clientX : e.clientX;
-        
+
         // --- CAMBIO AQUÍ: AUMENTADO DE 2.5 A 6.0 PARA MAYOR VELOCIDAD ---
-        const dist = (this.touchStart - x) * 6.0; 
-        
-        if(Math.abs(dist) > 2) this.hasMoved = true;
+        const dist = (this.touchStart - x) * 6.0;
+
+        if (Math.abs(dist) > 2) this.hasMoved = true;
 
         this.scroll.target += dist * 0.01;
         this.touchStart = x;
@@ -262,15 +262,15 @@ class WebGLApp {
 
     onTouchUp = (e: TouchEvent | MouseEvent) => {
         this.isDragging = false;
-        
+
         if (!this.hasMoved) {
             const clientX = 'changedTouches' in e ? e.changedTouches[0].clientX : e.clientX;
             const clientY = 'changedTouches' in e ? e.changedTouches[0].clientY : e.clientY;
-            
+
             const rect = this.container.getBoundingClientRect();
             const ndcX = ((clientX - rect.left) / rect.width) * 2 - 1;
             const ndcY = -(((clientY - rect.top) / rect.height) * 2 - 1);
-            
+
             const worldX = ndcX * (this.viewport.width / 2);
             const worldY = ndcY * (this.viewport.height / 2);
 
@@ -289,7 +289,7 @@ class WebGLApp {
 
     addEvents() {
         window.addEventListener('resize', this.resize.bind(this));
-        
+
         this.container.addEventListener('mousedown', this.onTouchDown);
         window.addEventListener('mousemove', this.onTouchMove);
         window.addEventListener('mouseup', this.onTouchUp);
@@ -297,22 +297,22 @@ class WebGLApp {
         this.container.addEventListener('touchstart', this.onTouchDown, { passive: true });
         this.container.addEventListener('touchmove', this.onTouchMove, { passive: true });
         window.addEventListener('touchend', this.onTouchUp);
-        
+
         this.container.addEventListener('wheel', this.onWheel, { passive: true });
     }
 
     update() {
         this.scroll.current = lerp(this.scroll.current, this.scroll.target, this.scroll.ease);
         const direction = this.scroll.current > this.scroll.last ? 1 : -1;
-        
-        // Curvatura estática
-        const currentBend = this.bendFactor; 
 
-        if(this.medias.length > 0){
-             this.medias.forEach(media => {
-                 media.update(this.scroll.current, direction, this.medias.length);
-                 media.program.uniforms.uBendFactor.value = currentBend;
-             });
+        // Curvatura estática
+        const currentBend = this.bendFactor;
+
+        if (this.medias.length > 0) {
+            this.medias.forEach(media => {
+                media.update(this.scroll.current, direction, this.medias.length);
+                media.program.uniforms.uBendFactor.value = currentBend;
+            });
         }
 
         this.scroll.last = this.scroll.current;
@@ -338,8 +338,8 @@ interface CertificatesGalleryProps {
     scrollEase?: number;
 }
 
-export default function CertificatesGallery({ 
-    items, 
+export default function CertificatesGallery({
+    items,
     bend = 3,
     textColor = '#ffffff',
     borderRadius = 0.05,
@@ -405,7 +405,7 @@ export default function CertificatesGallery({
                 scale: 1,
                 y: 0,
                 duration: 0.5,
-                ease: "back.out(1.2)", 
+                ease: "back.out(1.2)",
             }, "-=0.3");
         }
     }, [expandedImage]);
@@ -413,13 +413,13 @@ export default function CertificatesGallery({
     // --- INICIALIZACIÓN DE WEBGL ---
     useEffect(() => {
         if (!containerRef.current) return;
-        
-        const app = new WebGLApp(containerRef.current, { 
-            items: items || [], 
-            bendFactor: bend, 
-            onImageClick: handleImageClick 
+
+        const app = new WebGLApp(containerRef.current, {
+            items: items || [],
+            bendFactor: bend,
+            onImageClick: handleImageClick
         });
-        
+
         appRef.current = app;
 
         return () => {
@@ -441,10 +441,10 @@ export default function CertificatesGallery({
             <div className="relative w-full h-full">
                 <div className="hidden lg:flex absolute left-0 top-0 bottom-0 z-10 pointer-events-none w-32 bg-linear-to-r from-black to-transparent" />
                 <div className="hidden lg:flex absolute right-0 top-0 bottom-0 z-10 pointer-events-none w-32 bg-linear-to-l from-black to-transparent" />
-                
-                <div 
-                    className="w-full h-full overflow-hidden cursor-grab active:cursor-grabbing" 
-                    ref={containerRef} 
+
+                <div
+                    className="w-full h-full overflow-hidden cursor-grab active:cursor-grabbing"
+                    ref={containerRef}
                 />
             </div>
 
@@ -474,16 +474,13 @@ export default function CertificatesGallery({
                             ref={imageRef}
                             src={expandedImage.image}
                             alt={expandedImage.text}
-                            className="pointer-events-auto w-auto max-h-[70vh] object-contain rounded-lg shadow-2xl shadow-purple-900/20 border border-white/10"
+                            className="pointer-events-auto w-auto max-h-[55vh] object-contain rounded-lg shadow-2xl shadow-purple-900/20 border border-white/10"
                         />
 
                         <div className="mt-6 text-center">
-                            <h3 className="text-2xl md:text-3xl font-bold text-white tracking-tight">
+                            <h3 className="text-xl md:text-2xl font-bold text-white tracking-tight">
                                 {expandedImage.text}
                             </h3>
-                            <p className="text-purple-400 font-mono text-sm mt-2 uppercase tracking-widest opacity-80">
-                                Certificado Oficial
-                            </p>
                         </div>
                     </div>
                 </div>

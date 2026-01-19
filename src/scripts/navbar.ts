@@ -1,116 +1,119 @@
-// Scroll progress bar y navbar
 const initNavbar = () => {
-    const nav = document.getElementById("main-nav");
-    const bar = document.getElementById("scroll-progress");
-    const menuToggle = document.getElementById("menu-toggle");
-    const mobileMenu = document.getElementById("mobile-menu");
-    const mobileLinks = document.querySelectorAll(".mobile-link");
-    const hamburgerLines = document.querySelectorAll(".hamburger-line");
-    const menuOverlay = document.getElementById("menu-overlay");
+  // 1. AÑADIMOS 'as HTMLElement' AQUÍ PARA QUE TS NO SE QUEJE
+  const nav = document.getElementById("main-nav");
+  const bar = document.getElementById("scroll-progress") as HTMLElement;
+  const menuToggle = document.getElementById("menu-toggle");
+  const mobileMenu = document.getElementById("mobile-menu");
+  const mobileLinks = document.querySelectorAll(".mobile-link");
+  const hamburgerLines = document.querySelectorAll(".hamburger-line");
+  const menuOverlay = document.getElementById("menu-overlay");
 
-    let isMenuOpen = false;
+  let isMenuOpen = false;
 
-    // Scroll progress
-    window.addEventListener("scroll", () => {
-        const scrollTop = window.scrollY;
-        const height =
-            document.documentElement.scrollHeight - window.innerHeight;
-        const percent = (scrollTop / height) * 100;
+  const onScroll = () => {
+    const scrollTop = window.scrollY;
+    
+    // Barra de progreso
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const percent = (scrollTop / docHeight) * 100;
+    
+    // TypeScript ya sabe que 'bar' es HTMLElement gracias al cambio arriba
+    if (bar) bar.style.width = percent + "%";
 
-        if (bar) bar.style.width = percent + "%";
+    // Navbar Blur
+    if (nav) {
+      if (scrollTop > 20) {
+        nav.classList.add("bg-black/40", "backdrop-blur-md", "shadow-sm");
+        nav.classList.remove("opacity-0"); 
+      } else {
+        nav.classList.remove("bg-black/40", "backdrop-blur-md", "shadow-sm");
+      }
+    }
+  };
 
-        if (nav) {
-            if (scrollTop > 20) nav.classList.add("nav-scrolled");
-            else nav.classList.remove("nav-scrolled");
-        }
-    });
+  onScroll();
+  window.removeEventListener("scroll", onScroll);
+  window.addEventListener("scroll", onScroll);
 
-    // Mobile menu toggle
-    const toggleMenu = () => {
-        isMenuOpen = !isMenuOpen;
+  const toggleMenu = () => {
+    isMenuOpen = !isMenuOpen;
 
-        if (mobileMenu) {
-            if (isMenuOpen) {
-                mobileMenu.classList.remove("translate-x-full");
-                mobileMenu.classList.add("translate-x-0");
-                document.body.style.overflow = "hidden";
-            } else {
-                mobileMenu.classList.add("translate-x-full");
-                mobileMenu.classList.remove("translate-x-0");
-                document.body.style.overflow = "";
-            }
-        }
+    if (mobileMenu) {
+      if (isMenuOpen) {
+        mobileMenu.classList.remove("translate-x-full");
+        mobileMenu.classList.add("translate-x-0");
+        document.body.style.overflow = "hidden";
+      } else {
+        mobileMenu.classList.add("translate-x-full");
+        mobileMenu.classList.remove("translate-x-0");
+        document.body.style.overflow = "";
+      }
+    }
 
-        // Toggle overlay blur
-        if (menuOverlay) {
-            if (isMenuOpen) {
-                menuOverlay.classList.remove("opacity-0", "pointer-events-none");
-                menuOverlay.classList.add("opacity-100", "pointer-events-auto");
-            } else {
-                menuOverlay.classList.add("opacity-0", "pointer-events-none");
-                menuOverlay.classList.remove("opacity-100", "pointer-events-auto");
-            }
-        }
-
-        if (menuToggle) {
-            menuToggle.setAttribute("aria-expanded", isMenuOpen.toString());
-        }
-
-        // Animate hamburger to X
-        if (hamburgerLines.length === 3) {
-            const [line1, line2, line3] = hamburgerLines as unknown as HTMLElement[];
-            if (isMenuOpen) {
-                line1.style.transform = "translateY(8px) rotate(45deg)";
-                line2.style.opacity = "0";
-                line3.style.transform = "translateY(-8px) rotate(-45deg)";
-            } else {
-                line1.style.transform = "";
-                line2.style.opacity = "1";
-                line3.style.transform = "";
-            }
-        }
-    };
+    if (menuOverlay) {
+      if (isMenuOpen) {
+        menuOverlay.classList.remove("opacity-0", "pointer-events-none");
+        menuOverlay.classList.add("opacity-100", "pointer-events-auto");
+      } else {
+        menuOverlay.classList.add("opacity-0", "pointer-events-none");
+        menuOverlay.classList.remove("opacity-100", "pointer-events-auto");
+      }
+    }
 
     if (menuToggle) {
-        menuToggle.addEventListener("click", toggleMenu);
+      menuToggle.setAttribute("aria-expanded", isMenuOpen.toString());
     }
 
-    // Close menu when clicking a link
-    mobileLinks.forEach(link => {
-        link.addEventListener("click", () => {
-            if (isMenuOpen) {
-                toggleMenu();
-            }
-        });
-    });
+    // 2. CORRECCIÓN IMPORTANTE PARA EL HAMBURGUESA
+    // Convertimos NodeList a Array y forzamos el tipo
+    const lines = Array.from(hamburgerLines) as HTMLElement[];
 
-    // Close menu when clicking the overlay
-    if (menuOverlay) {
-        menuOverlay.addEventListener("click", () => {
-            if (isMenuOpen) {
-                toggleMenu();
-            }
-        });
+    if (lines.length === 3) {
+      const [line1, line2, line3] = lines;
+      if (isMenuOpen) {
+        line1.style.transform = "translateY(8px) rotate(45deg)";
+        line2.style.opacity = "0";
+        line3.style.transform = "translateY(-8px) rotate(-45deg)";
+      } else {
+        line1.style.transform = "";
+        line2.style.opacity = "1";
+        line3.style.transform = "";
+      }
     }
+  };
 
-    // Close menu on resize to desktop
-    window.addEventListener("resize", () => {
-        if (window.innerWidth >= 768 && isMenuOpen) {
-            toggleMenu();
-        }
-    });
+  if (menuToggle) {
+    // Usamos onclick para limpiar referencias viejas automáticamente
+    menuToggle.onclick = toggleMenu;
+  }
 
-    // Close menu with Escape key
-    document.addEventListener("keydown", (e) => {
-        if (e.key === "Escape" && isMenuOpen) {
-            toggleMenu();
-        }
+  mobileLinks.forEach((link) => {
+    link.addEventListener("click", () => {
+      if (isMenuOpen) toggleMenu();
     });
+  });
+
+  if (menuOverlay) {
+    menuOverlay.addEventListener("click", () => {
+      if (isMenuOpen) toggleMenu();
+    });
+  }
+
+  const onResize = () => {
+    if (window.innerWidth >= 768 && isMenuOpen) {
+      toggleMenu();
+    }
+  };
+  window.removeEventListener("resize", onResize);
+  window.addEventListener("resize", onResize);
+
+  const onKeydown = (e: KeyboardEvent) => { // Especificamos el tipo de evento
+    if (e.key === "Escape" && isMenuOpen) {
+      toggleMenu();
+    }
+  };
+  document.removeEventListener("keydown", onKeydown as EventListener);
+  document.addEventListener("keydown", onKeydown as EventListener);
 };
 
-// Ejecutar cuando el DOM esté listo
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initNavbar);
-} else {
-    initNavbar();
-}
+document.addEventListener('astro:page-load', initNavbar);
