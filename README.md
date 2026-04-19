@@ -8,7 +8,7 @@ npm create astro@latest -- --template minimal
 
 ## 🚀 Project Structure
 
-Esto es una prueba para ver que dice la ia respecto a este cambio 2
+Prueba para ver el funcionamiento de la ia agente
 
 Inside of your Astro project, you'll see the following folders and files:
 
