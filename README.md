@@ -11,7 +11,7 @@ npm create astro@latest -- --template minimal
 Prueba para ver el funcionamiento de la ia agente
 
 Cambio en el readme solamente para comprar el funcionamiento de la ia
-Cosita en el readme nada importante
+Cambiando cosita en el readme
 
 Inside of your Astro project, you'll see the following folders and files:
 
