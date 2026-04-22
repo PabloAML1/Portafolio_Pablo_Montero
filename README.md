@@ -8,9 +8,8 @@ npm create astro@latest -- --template minimal
 
 ## 🚀 Project Structure
 
-Prueba para ver el funcionamiento de la ia agente
+Cambio en el readme solamenta para ver el funcionamiento del agente
 
-Cambio en minimo en el readme
 Inside of your Astro project, you'll see the following folders and files:
 
 ```text
