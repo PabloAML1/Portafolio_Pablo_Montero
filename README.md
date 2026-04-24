@@ -8,7 +8,9 @@ npm create astro@latest -- --template minimal
 
 ## 🚀 Project Structure
 
-Realizando un pequeño cambio en el readme
+Eliminando linea y haciendo poniendo
+un cambio minimo en
+el readme
 
 Inside of your Astro project, you'll see the following folders and files:
 
