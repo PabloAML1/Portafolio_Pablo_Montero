@@ -8,7 +8,7 @@ npm create astro@latest -- --template minimal
 
 ## 🚀 Project Structure
 
-AGREGACIÓN de una linea en el reame solamente para comprobar la lectura de la IA
+Realizando un pequeño cambio en el readme
 
 Inside of your Astro project, you'll see the following folders and files:
 
