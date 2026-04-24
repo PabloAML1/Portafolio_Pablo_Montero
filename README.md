@@ -8,9 +8,9 @@ npm create astro@latest -- --template minimal
 
 ## 🚀 Project Structure
 
-Prueba para ver el funcionamiento de la ia agente
-
-Esto es un commit, probando el funcionamiento de la ia
+Añadiendo más texto en el reamde
+solamente es para comprobación de la ia
+si guarda en supabase datos de código
 
 Inside of your Astro project, you'll see the following folders and files:
 
