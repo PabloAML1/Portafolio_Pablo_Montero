@@ -8,9 +8,8 @@ npm create astro@latest -- --template minimal
 
 ## 🚀 Project Structure
 
-Añadiendo más texto en el reamde
-solamente es para comprobación de la ia
-si guarda en supabase datos de código
+Cambio minimo en el readme solamente para probar
+el push y pull request del agente
 
 Inside of your Astro project, you'll see the following folders and files:
 
