@@ -1,8 +1,17 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { gsap } from 'gsap';
 import { projects, type Project } from '../../data/projects';
+import { getLanguage, getTranslation } from '../../scripts/i18n';
+
+const spanishProjects: Record<number, Partial<Project>> = {
+    1: { title: 'Sistema de combustible', type: 'Full Stack', description: 'Sistema diseñado para controlar el consumo de combustible en rutas de transporte.', features: ['Autenticación y autorización de usuarios', 'Arquitectura de microservicios', 'Bases de datos distribuidas', 'Informes de análisis de combustible', 'Panel de administración', 'Despliegue en Google Cloud', 'Arquitectura monorepo'] },
+    2: { title: 'Centro de control hospitalario', type: 'Full Stack', description: 'Plataforma web diseñada para gestionar hospitales, personal médico y consultas de pacientes desde un sistema centralizado.', features: ['Gestión de hospitales y personal médico', 'Registros de consultas de pacientes', 'Autenticación con acceso por roles', 'Bases de datos MySQL distribuidas con replicación', 'Entorno local con Docker', 'Paneles de administración y hospitales', 'Arquitectura de base de datos maestro-réplica'] },
+    3: { title: 'BookingView – Plataforma hotelera', type: 'Full Stack', description: 'Plataforma full stack de reservas hoteleras para web y móvil que conecta propietarios de hoteles con viajeros.', features: ['Aplicaciones web y móvil (React y React Native)', 'Autenticación basada en roles', 'Gestión de hoteles y habitaciones', 'Sistema de búsqueda y reservas', 'Integración de pagos con Stripe', 'Panel de administración'] },
+    4: { title: 'Proyecto GPIS – Plataforma de autenticación', type: 'Full Stack', description: 'Plataforma full stack de autenticación con inicio de sesión, registro y validación segura de formularios.', features: ['Autenticación de usuarios (inicio de sesión y registro)', 'Validación de formularios en el cliente', 'Gestión de estado con TanStack Query', 'Componentes de interfaz modernos', 'Backend NestJS con TypeScript', 'Enrutamiento del cliente', 'Seguridad de tipos de extremo a extremo'] },
+};
 
 export const ProjectsPlaylist: React.FC = () => {
+    const [language, setLanguage] = useState(getLanguage());
     const [activeProject, setActiveProject] = useState<Project | null>(null);
     const [expandedProject, setExpandedProject] = useState<Project | null>(null);
     const [isExpanding, setIsExpanding] = useState(false);
@@ -17,6 +26,16 @@ export const ProjectsPlaylist: React.FC = () => {
     const footerLineRef = useRef<HTMLDivElement>(null);
     const rowRefs = useRef<{ [key: number]: HTMLDivElement | null }>({});
     const galleryImageRef = useRef<HTMLImageElement>(null);
+    const localizedProject = (project: Project): Project =>
+        language === 'es' ? { ...project, ...spanishProjects[project.id] } : project;
+
+    useEffect(() => {
+        const handleLanguageChange = (event: Event) => {
+            setLanguage((event as CustomEvent<'es' | 'en'>).detail);
+        };
+        window.addEventListener('language-change', handleLanguageChange);
+        return () => window.removeEventListener('language-change', handleLanguageChange);
+    }, []);
 
     // Get current gallery images
     const galleryImages = expandedProject?.images || (expandedProject ? [expandedProject.img] : []);
@@ -370,26 +389,28 @@ export const ProjectsPlaylist: React.FC = () => {
             {/* Section Header */}
             <div className="max-w-6xl mx-auto mb-12">
                 <span className="text-purple-400 font-mono text-sm tracking-wider uppercase mb-4 block">
-                    Featured Work
+                    {getTranslation('projects.label', language)}
                 </span>
                 <h2 className="text-4xl md:text-6xl font-black text-white mb-4">
-                    Projects
+                    {getTranslation('projects.title', language)}
                 </h2>
                 <p className="text-white/50 max-w-xl">
-                    A selection of projects I've worked on
+                    {getTranslation('projects.description', language)}
                 </p>
             </div>
 
             {/* Table Header */}
             <div className="max-w-6xl mx-auto" onMouseLeave={handleContainerLeave}>
                 <div className="grid grid-cols-12 gap-4 py-4 border-b border-white/20 text-white/40 font-mono text-xs uppercase tracking-wider">
-                    <div className="col-span-5">Project Name</div>
-                    <div className="col-span-3">Type</div>
-                    <div className="col-span-3">Technologies</div>
+                    <div className="col-span-5">{getTranslation('projects.name', language)}</div>
+                    <div className="col-span-3">{getTranslation('projects.type', language)}</div>
+                    <div className="col-span-3">{getTranslation('projects.technologies', language)}</div>
                 </div>
 
                 {/* Project Rows */}
-                {projects.map((project, index) => (
+                {projects.map((project, index) => {
+                    const displayProject = localizedProject(project);
+                    return (
                     <div
                         key={project.id}
                         ref={el => { rowRefs.current[project.id] = el }}
@@ -405,14 +426,14 @@ export const ProjectsPlaylist: React.FC = () => {
                         {/* Project Name */}
                         <div className="col-span-5 flex items-center relative z-10">
                             <h3 className="text-xl md:text-2xl font-bold text-white/70 group-hover:text-white transition-all duration-300 group-hover:translate-x-4">
-                                {project.title}
+                                {displayProject.title}
                             </h3>
                         </div>
 
                         {/* Type */}
                         <div className="col-span-3 flex items-center relative z-10">
                             <span className="text-purple-400/70 font-mono text-sm group-hover:text-purple-400 transition-colors duration-300">
-                                {project.type}
+                                {displayProject.type}
                             </span>
                         </div>
 
@@ -453,7 +474,8 @@ export const ProjectsPlaylist: React.FC = () => {
                             </div>
                         </div>
                     </div>
-                ))}
+                    );
+                })}
             </div>
 
             {/* View All Link */}
@@ -464,7 +486,7 @@ export const ProjectsPlaylist: React.FC = () => {
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 text-purple-400 font-mono text-sm hover:text-purple-300 transition-colors group"
                 >
-                    View all projects
+                    {getTranslation('projects.viewAll', language)}
                     <svg
                         className="w-4 h-4 transform group-hover:translate-x-1 transition-transform"
                         fill="none"
@@ -515,7 +537,9 @@ export const ProjectsPlaylist: React.FC = () => {
             />
 
             {/* Expanded Project View  */}
-            {expandedProject && (
+            {expandedProject && (() => {
+                const displayProject = localizedProject(expandedProject);
+                return (
                 <div
                     ref={expandedRef}
                     className="fixed inset-0 z-101 flex pointer-events-none opacity-0"
@@ -545,16 +569,16 @@ export const ProjectsPlaylist: React.FC = () => {
                             {/* Title - Line by line animation */}
                             <div className="overflow-hidden mb-6">
                                 <h2 data-line className="text-4xl md:text-6xl lg:text-7xl font-black text-white uppercase tracking-tight">
-                                    {expandedProject.title}
+                                    {displayProject.title}
                                 </h2>
                             </div>
 
                             {/* Description - Split into lines */}
                             <div className="mb-8 space-y-1">
-                                {expandedProject.description.split('. ').map((line, i) => (
+                                {displayProject.description.split('. ').map((line, i) => (
                                     <div key={i} className="overflow-hidden">
                                         <p data-line className="text-lg md:text-xl text-white/70 uppercase tracking-wide">
-                                            {line}{i < expandedProject.description.split('. ').length - 1 ? '.' : ''}
+                                            {line}{i < displayProject.description.split('. ').length - 1 ? '.' : ''}
                                         </p>
                                     </div>
                                 ))}
@@ -568,7 +592,7 @@ export const ProjectsPlaylist: React.FC = () => {
                                     <div data-fade className="flex justify-between items-start mb-6">
                                         <div>
                                             <p className="text-white/50 text-sm uppercase tracking-wider mb-1">
-                                                {expandedProject.type}
+                                                {displayProject.type}
                                             </p>
                                             <div className="flex flex-wrap gap-2 mt-2">
                                                 {expandedProject.technologies.map((tech, i) => (
@@ -580,7 +604,7 @@ export const ProjectsPlaylist: React.FC = () => {
                                         </div>
                                         {expandedProject.features && (
                                             <p className="text-white/40 text-sm uppercase tracking-wider">
-                                                {expandedProject.features.length.toString().padStart(2, '0')} Features
+                                                {displayProject.features.length.toString().padStart(2, '0')} {getTranslation('projects.features', language)}
                                             </p>
                                         )}
                                     </div>
@@ -594,14 +618,14 @@ export const ProjectsPlaylist: React.FC = () => {
                                                 rel="noopener noreferrer"
                                                 className="group inline-flex items-center gap-3 text-white hover:text-purple-400 transition-colors"
                                             >
-                                                <span className="text-sm uppercase tracking-widest font-medium">See Project</span>
+                                                <span className="text-sm uppercase tracking-widest font-medium">{getTranslation('projects.live', language)}</span>
                                                 <svg width="17" height="17" xmlns="http://www.w3.org/2000/svg" className="transform group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform">
                                                     <path d="M14.875 13.357V3.643L1.518 17 0 15.482 13.357 2.125H3.643V0H17v13.357z" fill="currentColor" fillRule="nonzero" />
                                                 </svg>
                                             </a>
                                         ) : (
                                             <span className="inline-flex items-center gap-3 text-white/40 cursor-not-allowed">
-                                                <span className="text-sm uppercase tracking-widest font-medium">Not available</span>
+                                                <span className="text-sm uppercase tracking-widest font-medium">{language === 'es' ? 'No disponible' : 'Not available'}</span>
                                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                                 </svg>
@@ -614,12 +638,12 @@ export const ProjectsPlaylist: React.FC = () => {
                                                 rel="noopener noreferrer"
                                                 className="group inline-flex items-center gap-3 text-white/60 hover:text-white transition-colors"
                                             >
-                                                <span className="text-sm uppercase tracking-widest font-medium">View Code</span>
+                                                <span className="text-sm uppercase tracking-widest font-medium">{getTranslation('projects.viewCode', language)}</span>
                                                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                                                     <path fillRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clipRule="evenodd" />
                                                 </svg>
                                             </a>
-                                        )}
+                                            )}
                                     </div>
                                 </div>
                             </div>
@@ -713,7 +737,8 @@ export const ProjectsPlaylist: React.FC = () => {
                         </div>
                     </div>
                 </div>
-            )}
+                );
+            })()}
         </div>
     );
 };
