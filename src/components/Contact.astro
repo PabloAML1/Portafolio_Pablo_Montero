@@ -69,25 +69,19 @@ const socialLinks = [
         data-contact-animate
         class="inline-block text-xs tracking-[0.3em] uppercase text-purple-400 mb-3 opacity-0"
       >
-        Get In Touch
+        <span data-i18n="contact.label">Contáctame</span>
       </span>
       <h2
         data-contact-animate
         class="text-3xl md:text-4xl lg:text-5xl font-black text-white mb-4 opacity-0"
       >
-        Let's work
-        <span
-          class="bg-linear-to-r from-indigo-400 via-purple-500 to-pink-500 bg-clip-text text-transparent"
-        >
-          together
-        </span>
+        <span data-i18n-html="contact.title">Trabajemos <span>juntos</span></span>
       </h2>
       <p
         data-contact-animate
         class="text-white/50 text-base md:text-lg max-w-xl mx-auto leading-relaxed opacity-0"
       >
-        I'm always open to discussing new projects, creative ideas, or
-        opportunities to be part of your vision.
+        <span data-i18n="contact.description">Siempre estoy abierto a conversar sobre nuevos proyectos, ideas creativas u oportunidades para ser parte de tu visión.</span>
       </p>
     </div>
 
@@ -107,10 +101,10 @@ const socialLinks = [
       <div class="flex flex-col justify-center text-left space-y-5">
         <div>
           <h3 class="text-xl md:text-2xl font-bold text-white mb-2">
-            Let's talk about your project
+            <span data-i18n="contact.heading">Hablemos sobre tu proyecto</span>
           </h3>
           <p class="text-white/50 text-sm leading-relaxed">
-            Fill out the form and I'll get back to you as soon as possible.
+            <span data-i18n="contact.subheading">Completa el formulario y te responderé lo antes posible.</span>
           </p>
         </div>
 
@@ -136,7 +130,7 @@ const socialLinks = [
         <!-- Social Links -->
         <div>
           <p class="text-white/40 text-xs uppercase tracking-widest mb-3">
-            Find me on
+            <span data-i18n="contact.find">Encuéntrame en</span>
           </p>
           <div class="flex flex-wrap gap-2 md:gap-3">
             {
@@ -187,14 +181,15 @@ const socialLinks = [
               for="name"
               class="block text-white/60 text-xs uppercase tracking-widest"
             >
-              Name
+              <span data-i18n="contact.name">Nombre</span>
             </label>
             <input
               type="text"
               id="name"
               name="name"
               required
-              placeholder="Your name"
+              placeholder="Tu nombre"
+              data-i18n-placeholder="contact.namePlaceholder"
               class="w-full px-3 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white text-sm placeholder-white/30 focus:outline-none focus:border-purple-500/50 focus:bg-white/10 transition-all duration-300"
             />
           </div>
@@ -223,14 +218,15 @@ const socialLinks = [
             for="subject"
             class="block text-white/60 text-xs uppercase tracking-widest"
           >
-            Subject
+            <span data-i18n="contact.subject">Asunto</span>
           </label>
           <input
             type="text"
             id="subject"
             name="subject"
             required
-            placeholder="What's this about?"
+            placeholder="¿De qué se trata?"
+            data-i18n-placeholder="contact.subjectPlaceholder"
             class="w-full px-3 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white text-sm placeholder-white/30 focus:outline-none focus:border-purple-500/50 focus:bg-white/10 transition-all duration-300"
           />
         </div>
@@ -241,14 +237,15 @@ const socialLinks = [
             for="message"
             class="block text-white/60 text-xs uppercase tracking-widest"
           >
-            Message
+            <span data-i18n="contact.message">Mensaje</span>
           </label>
           <textarea
             id="message"
             name="message"
             required
             rows="3"
-            placeholder="Tell me about your project..."
+            placeholder="Cuéntame sobre tu proyecto..."
+            data-i18n-placeholder="contact.messagePlaceholder"
             class="w-full px-3 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white text-sm placeholder-white/30 focus:outline-none focus:border-purple-500/50 focus:bg-white/10 transition-all duration-300 resize-none"
           ></textarea>
         </div>
@@ -260,7 +257,7 @@ const socialLinks = [
           class="group relative w-full py-3 px-6 rounded-lg bg-linear-to-r from-indigo-500 via-purple-500 to-pink-500 text-white font-semibold text-sm overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-purple-500/25"
         >
           <span class="relative z-10 flex items-center justify-center gap-2">
-            <span>Send Message</span>
+            <span data-i18n="contact.send">Enviar mensaje</span>
             <svg
               class="w-4 h-4 transform group-hover:translate-x-1 transition-transform duration-300"
               fill="none"
@@ -580,7 +577,7 @@ const socialLinks = [
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
-            <span>Sending...</span>
+            <span>${document.documentElement.lang === "es" ? "Enviando..." : "Sending..."}</span>
           </span>
         `;
 
@@ -601,7 +598,9 @@ const socialLinks = [
             formStatus.className =
               "text-center py-3 rounded-xl bg-green-500/20 text-green-400 border border-green-500/30";
             formStatus.textContent =
-              "¡Message sent successfully! I'll get back to you soon.";
+              document.documentElement.lang === "es"
+                ? "¡Mensaje enviado correctamente! Te responderé pronto."
+                : "Message sent successfully! I'll get back to you soon.";
             formStatus.classList.remove("hidden");
 
             // Reset form
@@ -610,14 +609,20 @@ const socialLinks = [
             // Show error message
             formStatus.className =
               "text-center py-3 rounded-xl bg-red-500/20 text-red-400 border border-red-500/30";
-            formStatus.textContent = "Something went wrong. Please try again.";
+            formStatus.textContent =
+              document.documentElement.lang === "es"
+                ? "Algo salió mal. Inténtalo de nuevo."
+                : "Something went wrong. Please try again.";
             formStatus.classList.remove("hidden");
           }
         } catch (error) {
           // Show error message
           formStatus.className =
             "text-center py-3 rounded-xl bg-red-500/20 text-red-400 border border-red-500/30";
-          formStatus.textContent = "Connection error. Please try again later.";
+          formStatus.textContent =
+            document.documentElement.lang === "es"
+              ? "Error de conexión. Inténtalo más tarde."
+              : "Connection error. Please try again later.";
           formStatus.classList.remove("hidden");
         }
 

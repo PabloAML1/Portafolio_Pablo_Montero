@@ -126,34 +126,42 @@ const {
           <li>
             <a
               class="inline-flex items-center justify-center px-3.5 py-2 rounded-full text-xs font-medium tracking-[0.12em] uppercase text-white/70 no-underline transition-all duration-250 hover:bg-white/6 hover:text-white active:scale-[0.96]"
-              href="#about">about</a
+              href="#about"><span data-i18n="nav.about">sobre mí</span></a
             >
           </li>
           <li>
             <a
               class="inline-flex items-center justify-center px-3.5 py-2 rounded-full text-xs font-medium tracking-[0.12em] uppercase text-white/70 no-underline transition-all duration-250 hover:bg-white/6 hover:text-white active:scale-[0.96]"
-              href="#projects">projects</a
+              href="#projects"><span data-i18n="nav.projects">proyectos</span></a
             >
           </li>
           <li>
             <a
               class="inline-flex items-center justify-center px-3.5 py-2 rounded-full text-xs font-medium tracking-[0.12em] uppercase text-white/70 no-underline transition-all duration-250 hover:bg-white/6 hover:text-white active:scale-[0.96]"
-              href="#certificates">certificates</a
+              href="#certificates"><span data-i18n="nav.certificates">certificados</span></a
             >
           </li>
           <li>
             <a
               class="inline-flex items-center justify-center px-3.5 py-2 rounded-full text-xs font-medium tracking-[0.12em] uppercase text-white/70 no-underline transition-all duration-250 hover:bg-white/6 hover:text-white active:scale-[0.96]"
-              href="#skills">skills</a
+              href="#skills"><span data-i18n="nav.skills">habilidades</span></a
             >
           </li>
           <li>
             <a
               class="inline-flex items-center justify-center px-3.5 py-2 rounded-full text-xs font-medium tracking-[0.12em] uppercase text-white/70 no-underline transition-all duration-250 hover:bg-white/6 hover:text-white active:scale-[0.96]"
-              href="#contact">contact</a
+              href="#contact"><span data-i18n="nav.contact">contacto</span></a
             >
           </li>
         </ul>
+        <button
+          type="button"
+          data-language-toggle
+          data-language-label
+          data-i18n-aria="language.aria"
+          class="hidden md:inline-flex items-center rounded-full border border-white/15 bg-white/5 px-3 py-2 text-xs font-medium uppercase tracking-wider text-white/80 transition hover:bg-white/10 hover:text-white"
+          aria-label="Cambiar idioma a inglés"
+        >English</button>
 
         <!-- Hamburger Button (Mobile) -->
         <button
@@ -185,34 +193,42 @@ const {
           <li>
             <a
               class="mobile-link text-2xl font-medium tracking-[0.12em] uppercase text-white/80 no-underline transition-all duration-300 hover:text-white"
-              href="#about">about</a
+              href="#about"><span data-i18n="nav.about">sobre mí</span></a
             >
           </li>
           <li>
             <a
               class="mobile-link text-2xl font-medium tracking-[0.12em] uppercase text-white/80 no-underline transition-all duration-300 hover:text-white"
-              href="#projects">projects</a
+              href="#projects"><span data-i18n="nav.projects">proyectos</span></a
             >
           </li>
           <li>
             <a
               class="mobile-link text-2xl font-medium tracking-[0.12em] uppercase text-white/80 no-underline transition-all duration-300 hover:text-white"
-              href="#certificates">certificates</a
+              href="#certificates"><span data-i18n="nav.certificates">certificados</span></a
             >
           </li>
           <li>
             <a
               class="mobile-link text-2xl font-medium tracking-[0.12em] uppercase text-white/80 no-underline transition-all duration-300 hover:text-white"
-              href="#skills">skills</a
+              href="#skills"><span data-i18n="nav.skills">habilidades</span></a
             >
           </li>
           <li>
             <a
               class="mobile-link text-2xl font-medium tracking-[0.12em] uppercase text-white/80 no-underline transition-all duration-300 hover:text-white"
-              href="#contact">contact</a
+              href="#contact"><span data-i18n="nav.contact">contacto</span></a
             >
           </li>
         </ul>
+        <button
+          type="button"
+          data-language-toggle
+          data-language-label
+          data-i18n-aria="language.aria"
+          class="absolute bottom-8 left-1/2 -translate-x-1/2 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-xs font-medium uppercase tracking-wider text-white/80 transition hover:bg-white/10 hover:text-white"
+          aria-label="Cambiar idioma a inglés"
+        >English</button>
       </div>
 
       <div class="max-w-375 mx-auto px-6 md:px-12">
@@ -246,6 +262,7 @@ const {
     <script>
       import "../scripts/animations";
       import "../scripts/navbar";
+      import "../scripts/i18n";
     </script>
   </body>
 </html>
