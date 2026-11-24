@@ -1,0 +1,58 @@
+---
+interface Props { returning?: boolean; }
+const { returning = false } = Astro.props;
+---
+<section class="overture" id={returning ? undefined : "inicio"} aria-labelledby={returning ? undefined : "overture-title"} data-overture={returning ? undefined : ""}>
+  <div class="overture-art" aria-hidden="true">
+    <picture>
+      <source media="(max-width: 640px) and (orientation: portrait)" srcset="/images/creation-of-adam-compact.webp" width="850" height="740" />
+      <img src="/images/creation-of-adam.webp" alt="" width="1920" height="871" fetchpriority={returning ? undefined : "high"} loading={returning ? "lazy" : undefined} data-fresco={returning ? undefined : ""} />
+    </picture>
+  </div>
+  <div class="overture-shade"></div>
+  <div class="site-frame overture-content">
+    <h2 id={returning ? undefined : "overture-title"} class="display overture-title">
+      <span class="sr-only">Pablo Montero</span>
+      <span class="opening-line" aria-hidden="true">
+        {["Pablo", "Montero"].map((word) => <span class="opening-word">{[...word].map((letter) => <span data-opening-letter>{letter}</span>)}</span>)}
+      </span>
+      <span class="opening-label"><span aria-hidden="true" data-opening-word>/</span> <span data-opening-word data-i18n="intro.portfolio">Portafolio</span></span>
+    </h2>
+  </div>
+  <div class="site-frame overture-footer" data-opening-footer>
+    <a href="#hero" class="overture-scroll"><span aria-hidden="true">→</span><span data-i18n="intro.explore">Explorar portafolio</span></a>
+    <a class="art-credit" href="https://commons.wikimedia.org/wiki/File:Michelangelo_-_Creation_of_Adam_(cropped).jpg" target="_blank" rel="noopener noreferrer">Miguel Ángel <span aria-hidden="true">·</span> c. 1511 ↗</a>
+  </div>
+</section>
+
+<style>
+  .overture { position: relative; min-height: 100svh; background: var(--ink); overflow: clip; isolation: isolate; display: flex; align-items: flex-end; }
+  .overture-art, .overture-shade { position: absolute; inset: 0; z-index: -1; }
+  .overture-art img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 38% 45%; transform-origin: 38% 45%; }
+  .overture-shade {
+    background: linear-gradient(0deg,#100e0d 0%,rgb(16 14 13 / .72) 17%,transparent 59%),
+      linear-gradient(90deg,rgb(15 12 10 / .35),transparent 70%),
+      linear-gradient(180deg,rgb(15 12 10 / .35),transparent 26%);
+  }
+  .overture-content { padding-bottom: clamp(6rem, 13vh, 9rem); }
+  .overture-title { font-size: clamp(3.5rem, 9.6vw, 10.25rem); line-height: .93; text-shadow: 0 2px 30px #120d0b; }
+  .opening-line, .opening-label { display: block; overflow: clip; padding-bottom: .12em; }
+  .opening-line { display: flex; flex-wrap: wrap; column-gap: .18em; }
+  .opening-word { display: inline-block; white-space: nowrap; }
+  [data-opening-word], [data-opening-letter] { display: inline-block; }
+  :global(html[data-opening-pending]) .overture-art,
+  :global(html[data-opening-pending]) .overture-content,
+  :global(html[data-opening-pending]) .overture-footer { visibility: hidden; }
+  .opening-label { font-family: Inter, system-ui, sans-serif; font-size: clamp(.78rem, 1.55vw, 1.5rem); color: var(--gold); letter-spacing: .18em; text-transform: uppercase; margin-top: .45em; }
+  .overture-footer { position: absolute; inset: auto 0 1.75rem; display: flex; justify-content: space-between; gap: 1rem; align-items: center; font-size: .75rem; }
+  .overture-scroll { display: inline-flex; align-items: center; gap: .65rem; }
+  .overture-scroll span:first-child { border: 1px solid var(--rule); width: 2.15rem; height: 2.15rem; border-radius: 50%; display: grid; place-items: center; }
+  .art-credit { color: var(--muted); text-align: right; }
+  .overture-footer a:hover { color: var(--gold); }
+  :global([data-horizontal]) .overture { position: absolute; inset: 0; z-index: 1; min-height: 0; }
+  :global(.portfolio-viewport:not([data-horizontal])) .overture-scroll span:first-child { rotate: 90deg; }
+  @media (max-width: 640px) and (orientation: portrait) {
+    .overture-art img { object-position: 18% 45%; }
+    .overture-footer a { min-height: 2.75rem; align-content: center; }
+  }
+</style>

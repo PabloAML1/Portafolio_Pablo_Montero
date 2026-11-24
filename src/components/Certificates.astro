@@ -1,58 +1,116 @@
 ---
-import CertificatesGallery from "./ReactBits/CertificatesGallery";
+import { ProjectsPlaylist } from "./ReactBits/ProjectsPlaylist";
+import PortfolioDialog from "./PortfolioDialog.astro";
 
-// Define tus certificados aquí
 const certificates = [
-  { image: "/images/Certifications/cert1.webp", text: "Scaling Applications on AWS" },
-  { image: "/images/Certifications/cert2.webp", text: "AWS NoSQL Databases" },
-  { image: "/images/Certifications/cert3.webp", text: "AWS Cloud Computing" },
-  { image: "/images/Certifications/cert4.webp", text: "UTA 2024 Conference" },
-  { image: "/images/Certifications/cert5.webp", text: "Introduction to Python" },
-  { image: "/images/Certifications/cert6.webp", text: "NestJS + Microservices" },
-  { image: "/images/Certifications/cert7.webp", text: "Astro & Headless CMS" },
-  { image: "/images/Certifications/cert8.webp", text: "GSAP from Scratch" },
-  { image: "/images/Certifications/cert9.webp", text: "Python from Scratch" },
-  { image: "/images/Certifications/cert10.webp", text: "English for Interviews" },
-];
+  "Scaling Applications on AWS",
+  "AWS NoSQL Databases",
+  "AWS Cloud Computing",
+  "UTA 2024 Conference",
+  "Introduction to Python",
+  "NestJS + Microservices",
+  "Astro & Headless CMS",
+  "GSAP from Scratch",
+  "Python from Scratch",
+  "English for Interviews",
+].map((text, index) => ({
+  text,
+  image: `/images/Certifications/cert${index + 1}.webp`,
+  dialogId: `certificate-${index + 1}`,
+}));
 ---
-
-<section
-  id="certificates"
-  class="relative py-24 px-8 md:px-24 bg-linear-to-b from-black via-purple-950/10 to-black"
->
-  <!-- Section Header -->
-  <div class="max-w-6xl mx-auto">
-    <span
-      class="text-purple-400 font-mono text-sm tracking-wider uppercase mb-4 block"
-    >
-      <span data-i18n="cert.label">Logros</span>
-    </span>
-    <h2 class="text-4xl md:text-6xl font-black text-white mb-4">
-      <span data-i18n="cert.title">Certificados</span>
-    </h2>
-    <p class="text-white/50 max-w-xl">
-      <span data-i18n="cert.description">Certificaciones profesionales y logros que validan mi experiencia.</span>
-    </p>
+<section id="certificates" aria-labelledby="certificates-title" data-certificates>
+  <div class="site-frame">
+    <header data-certificates-header>
+      <p class="eyebrow" data-i18n="cert.label">Logros</p>
+      <h2 class="display section-title" id="certificates-title" data-i18n="cert.title">Certificados</h2>
+      <p class="section-description" data-i18n="cert.description">Certificaciones profesionales y logros que validan mi experiencia.</p>
+    </header>
+    <div data-certificates-grid>
+      <ProjectsPlaylist items={certificates} client:media="(any-hover: hover) and (any-pointer: fine)" />
+    </div>
+    <a class="line-link certificates-more" data-certificates-more href="https://www.credly.com/users/pablo-montero.180da8f8/badges/credly" target="_blank" rel="noopener noreferrer">
+      <span data-i18n="cert.more">Ver más en Credly</span><span aria-hidden="true">↗</span>
+    </a>
   </div>
-
-  <!-- Gallery Container -->
-  <div class="relative h-64 md:h-72">
-    <CertificatesGallery
-      client:visible
-      items={certificates}
-      bend={0}
-      borderRadius={0.04}
-      textColor="#ffffff"
-      font="500 30px Inter"
-      scrollSpeed={1.3}
-      scrollEase={0.03}
-    />
-  </div>
-
-  <!-- Instructions -->
-  <div class="max-w-6xl mx-auto px-6 mt-8">
-    <p class="text-white/30 text-sm text-center font-mono">
-      <span data-i18n="cert.instructions">Arrastra para navegar • Haz clic para ampliar</span>
-    </p>
-  </div>
+  {certificates.map(({ text, image, dialogId }) =>
+    <PortfolioDialog id={dialogId} title={text} image={image} />
+  )}
 </section>
+<style is:global>
+  #certificates { padding-block: clamp(6.5rem, 15svh, 9.5rem) clamp(1.1rem, 3.5svh, 3rem); }
+  #certificates .section-title { font-size: clamp(2.9rem, 7vw, 6.5rem); }
+  .certificate-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: clamp(.35rem, 1svh, .65rem) clamp(.55rem, 2.4vw, 2.5rem);
+    margin-top: clamp(1rem, 3svh, 2.1rem);
+  }
+  .certificate-list > li {
+    --certificate-reveal: clamp(0, calc(var(--certificate-grid-progress, 1) * 1.4 - var(--certificate-row-index) * .1), 1);
+    --certificate-entry-x: -.9rem;
+    opacity: var(--certificate-reveal);
+    translate: calc(var(--certificate-entry-x) * (1 - var(--certificate-reveal))) calc(.8rem * (1 - var(--certificate-reveal)));
+  }
+  .certificate-list > li:nth-child(even) { --certificate-entry-x: .9rem; }
+  .certificate-row {
+    width: 100%;
+    height: 100%;
+    min-height: clamp(2.4rem, 6.1svh, 3.65rem);
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: .4rem;
+    align-items: center;
+    text-align: left;
+    border: 1px solid var(--rule);
+    padding: clamp(.35rem, .9svh, .75rem) clamp(.45rem, 1.1vw, 1rem);
+    color: var(--muted);
+    font-size: clamp(.77rem, 1.4vw, 1rem);
+    line-height: 1.25;
+    transition: background-color .18s ease, color .18s ease, box-shadow .18s ease;
+  }
+  .certificate-row:hover, .certificate-row:focus-visible {
+    color: var(--paper);
+    background: rgb(216 184 146 / .09);
+    box-shadow: inset 2px 0 var(--gold);
+  }
+  .certificate-row > span:last-child { color: var(--gold); font-size: .9em; }
+  .portfolio-viewport:not([data-horizontal]) #certificates { padding-block: clamp(3.75rem, 8vw, 6rem); }
+  .portfolio-viewport:not([data-horizontal]) .certificate-row { min-height: 2.75rem; }
+  @media (max-width: 520px) {
+    .certificate-list { grid-template-columns: minmax(0, 1fr); }
+    .certificate-row { padding: .65rem .8rem; }
+  }
+  .certificates-more { margin-top: clamp(.65rem, 2svh, 1.3rem); }
+  .certificate-preview {
+    position: fixed;
+    inset: 0 auto auto 0;
+    z-index: 20;
+    margin: 0;
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .28s ease, visibility 0s .28s;
+  }
+  .certificate-preview[data-visible="true"] {
+    opacity: 1;
+    visibility: visible;
+    transition: opacity .48s cubic-bezier(.22, 1, .36, 1), visibility 0s;
+  }
+  .certificate-preview[data-interrupted] { transition: none; }
+  .certificate-preview img {
+    display: block;
+    max-width: min(22rem, 42vw, 52svh);
+    max-height: 44svh;
+    rotate: 5deg;
+    animation: certificate-preview-in .48s cubic-bezier(.22, 1, .36, 1) both;
+    mask-image:
+      linear-gradient(to right, transparent, black 2.5% 97.5%, transparent),
+      linear-gradient(to bottom, transparent, black 3% 97%, transparent);
+    mask-composite: intersect;
+  }
+  @keyframes certificate-preview-in {
+    from { opacity: .18; translate: 0 .45rem; scale: .985; }
+    to { opacity: 1; translate: 0 0; scale: 1; }
+  }
+</style>

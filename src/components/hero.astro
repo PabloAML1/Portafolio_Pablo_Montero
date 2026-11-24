@@ -1,109 +1,86 @@
 ---
-import LightRays from "../components/ReactBits/LightRays.tsx";
-import TechLogoLoop from "../components/ReactBits/TechLogoLoop.tsx";
+import SectionRays from "./SectionRays.astro";
+import PortraitReveal from "./PortraitReveal.astro";
+import Overture from "./Overture.astro";
 ---
 
-<section
-  id="hero"
-  class="relative h-screen overflow-hidden bg-black font-['Inter']"
->
-  <!-- Light Rays Background -->
-  <div class="absolute inset-0 -z-10">
-    <LightRays
-      client:only="react"
-      raysOrigin="top-right"
-      raysColor="#8b5cf6"
-      raysSpeed={1.2}
-      lightSpread={2}
-      rayLength={2}
-      followMouse={true}
-      mouseInfluence={0.1}
-      noiseAmount={0.05}
-      distortion={0.03}
-    />
+<div class="opening">
+  <div class="opening-stage">
+    <Overture />
+    <section id="hero" class="hero-panel" tabindex="-1" data-hero>
+      <SectionRays origin="top-right" />
+      <div class="site-frame hero-layout">
+        <div class="hero-heading" data-hero-heading>
+          <p class="eyebrow availability" data-i18n="hero.availability">Disponible para trabajar</p>
+          <h1 class="display">Software<br /><em>Engineer.</em></h1>
+        </div>
+        <figure class="portrait" data-portrait>
+          <PortraitReveal />
+        </figure>
+        <div class="hero-copy" data-hero-copy>
+          <p data-i18n="hero.description">Especializado en crear aplicaciones full-stack escalables. Conecto sistemas backend de alto rendimiento con experiencias frontend inmersivas y cinematográficas.</p>
+          <div class="hero-actions">
+            <a class="solid-link" href="#projects"><span data-i18n="hero.work">Ver proyectos</span> <span aria-hidden="true">↗</span></a>
+            <a class="line-link" href="#contact" data-i18n="hero.contact">Contacto</a>
+          </div>
+        </div>
+      </div>
+    </section>
   </div>
+  <div class="hero-stop" aria-hidden="true"></div>
+</div>
 
-  <!-- Contenido -->
-  <div
-    class="relative z-10 grid h-full grid-cols-1 md:grid-cols-2 items-center px-8 md:px-24"
-  >
-    <!-- IMAGEN -->
-    <div
-      id="hero-image"
-      class="relative hidden md:flex justify-center items-center order-1 mr-10 opacity-0"
-    >
-      <div class="relative">
-        <img
-          src="/images/hero.png"
-          alt="Portrait"
-          class="w-87.5 lg:w-105 xl:w-120 h-auto object-contain relative z-10"
-        />
-      </div>
-    </div>
-
-    <!-- TEXTO -->
-    <div class="space-y-5 order-2 mt-10">
-      <!-- Badge -->
-      <div
-        data-hero-animate
-        class="inline-flex items-center gap-2 px-4 py-1 rounded-full border border-white/10 bg-white/5 opacity-0"
-      >
-        <span class="relative flex h-2 w-2">
-          <span
-            class="absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75 animate-ping"
-          ></span>
-          <span class="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"
-          ></span>
-        </span>
-        <span class="text-[0.65rem] tracking-[0.3em] uppercase text-white/60">
-          <span data-i18n="hero.availability">Disponible para trabajar</span>
-        </span>
-      </div>
-
-      <!-- TITULO -->
-      <h1 class="leading-[0.5] tracking-tight">
-        <span
-          data-hero-animate
-          class="block text-6xl md:text-7xl xl:text-8xl font-black text-white opacity-0"
-        >
-          Software
-        </span>
-        <span
-          data-hero-animate
-          class="block text-6xl md:text-7xl xl:text-8xl font-black bg-linear-to-r from-indigo-400 via-purple-500 to-pink-500 bg-clip-text text-transparent opacity-0 pb-5"
-        >
-          Engineer
-        </span>
-      </h1>
-
-      <p
-        data-hero-animate
-        class="text-white/50 max-w-xl leading-relaxed opacity-0"
-      >
-        <span data-i18n="hero.description">Especializado en crear aplicaciones full-stack escalables. Conecto sistemas backend de alto rendimiento con experiencias frontend inmersivas y cinematográficas.</span>
-      </p>
-
-      <!-- LogoLoop - Tech Stack -->
-      <div data-hero-animate class="max-w-md mt- opacity-0 min-h-11">
-        <TechLogoLoop client:only="react" />
-      </div>
-
-      <!-- Botones -->
-      <div data-hero-animate class="flex gap-4 pt-4 opacity-0">
-        <a
-          href="#projects"
-          class="px-7 py-3 rounded-xl bg-linear-to-r from-indigo-500 to-purple-600 text-white font-semibold shadow-xl shadow-indigo-500/30 transition hover:scale-105"
-        >
-          <span data-i18n="hero.work">Ver proyectos</span>
-        </a>
-
-        <a
-          href="#contact"
-          class="px-7 py-3 rounded-xl border border-white/15 bg-white/5 text-white font-semibold hover:bg-white/10 transition"
-        >
-          <span data-i18n="hero.contact">Contacto</span>
-        </a>
-      </div>
-    </div>
-  </div>
-</section>
+<style>
+  .opening, .opening-stage { position: relative; }
+  .hero-panel {
+    position: relative;
+    isolation: isolate;
+    background: radial-gradient(ellipse at 100% 0%, #2a1e16 0%, var(--ink) 62%);
+    background-color: var(--ink);
+    background-size: 100% 100dvh;
+    background-repeat: no-repeat;
+    padding-block: clamp(3.75rem, 7svh, 5rem) .5rem;
+  }
+  :global([data-horizontal]) .hero-panel:not([data-light-visible]) :global([data-section-rays]) { display: none; }
+  :global(.portfolio-viewport:not([data-horizontal])) .hero-panel { background: var(--ink); }
+  .hero-layout {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    align-items: center;
+    padding-inline: clamp(1.25rem, 4.5vw, 5.75rem);
+  }
+  .hero-heading, .hero-copy, .portrait { grid-row: 1; }
+  .hero-heading { grid-column: 1 / 6; margin-block-end: clamp(1.5rem, 9svh, 5.5rem); z-index: 1; pointer-events: none; }
+  .hero-heading > * { width: fit-content; pointer-events: auto; }
+  .hero-heading h1 { font-size: clamp(2.75rem, 8.55vw, 9.5rem); line-height: .83; margin-block-start: .2em; }
+  .hero-heading h1 em { color: var(--gold); font-weight: inherit; }
+  .hero-copy { grid-column: 9 / -1; margin-block-start: clamp(2rem, 15svh, 9rem); width: min(100%, 18.75rem); z-index: 1; }
+  .hero-copy > p { color: var(--paper); line-height: 1.57; font-size: clamp(.88rem, 1.26vw, 1.18rem); text-shadow: 0 1px 12px var(--ink); }
+  .hero-actions { display: flex; align-items: center; flex-wrap: wrap; gap: .45rem 1.05rem; margin-top: 1.3rem; }
+  .availability::before { content: ''; display: inline-block; width: .42rem; height: .42rem; border-radius: 50%; background: #aabf9b; margin-right: .65rem; vertical-align: .13em; }
+  .portrait {
+    position: relative;
+    inset-block-start: clamp(-3.7rem, -6svh, -2rem);
+    grid-column: 3 / 11;
+    margin: 0;
+    min-width: 0;
+    width: min(100%, 77svh, 58vw, calc((100svh - 4.85rem) / 1.17));
+    justify-self: center;
+  }
+  :global([data-horizontal]) .opening { flex: 0 0 calc(2 * var(--slide-width)); scroll-snap-align: start; }
+  :global([data-horizontal]) .opening-stage { position: sticky; left: 0; width: var(--slide-width); height: 100%; overflow: clip; }
+  :global([data-horizontal]) .hero-panel { height: 100%; overflow-y: auto; }
+  :global([data-horizontal]) .hero-layout { min-height: 100%; }
+  :global([data-horizontal]) .hero-stop { position: absolute; left: var(--slide-width); top: 0; width: var(--slide-width); height: 1px; scroll-snap-align: start; pointer-events: none; }
+  @media (max-width: 1023px), (hover: none) and (pointer: coarse) {
+    .hero-layout { grid-template-columns: 1fr; gap: .9rem; text-align: center; }
+    .hero-panel { padding-block: clamp(3.75rem, 8vw, 6rem) 3.5rem; }
+    .hero-heading, .hero-copy, .portrait { grid-area: auto; margin: 0; }
+    .hero-heading > * { margin-inline: auto; }
+    .hero-heading h1 { font-size: clamp(3rem, 12vw, 6rem); }
+    .hero-copy { width: min(100%, 27rem); justify-self: center; }
+    .hero-actions { margin-top: .85rem; justify-content: center; }
+    .portrait { inset-block-start: 0; width: min(88%, 28rem, 55svh); }
+    .hero-actions a { min-height: 2.75rem; }
+  }
+</style>

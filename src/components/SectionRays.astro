@@ -1,0 +1,49 @@
+---
+import LightRays from "./ReactBits/LightRays";
+import { desktopPresentation } from "../scripts/portfolio-layout";
+
+interface Props {
+  origin: "top-left" | "top-right";
+}
+
+const { origin } = Astro.props;
+---
+
+<div class="section-rays" data-section-rays data-light-origin={origin} aria-hidden="true">
+  <LightRays
+    client:media={desktopPresentation}
+    raysOrigin={origin}
+    raysColor="#ffd6a5"
+    raysSpeed={0.55}
+    lightSpread={1.8}
+    rayLength={2.4}
+    fadeDistance={1.45}
+    mouseInfluence={0.075}
+    noiseAmount={0.04}
+    distortion={0.025}
+  />
+</div>
+
+<style>
+  .section-rays {
+    position: absolute;
+    inset: 0 0 auto;
+    height: min(100%, 100dvh);
+    z-index: -1;
+    pointer-events: none;
+    opacity: .43;
+    mask-image: linear-gradient(black 12%, rgb(0 0 0 / .7) 53%, transparent 100%);
+  }
+  :global(.portfolio-viewport:not([data-horizontal])) .section-rays {
+    height: min(100%, 40rem);
+    opacity: .65;
+    background: radial-gradient(ellipse 88% 66% at var(--light-corner, 100%) 24%, rgb(216 163 111 / .24), transparent 100%);
+    mask-image: var(--section-fade-block);
+  }
+  :global(.portfolio-viewport:not([data-horizontal])) .section-rays :global(astro-island) { display: none; }
+  [data-light-origin="top-left"] { --light-corner: 0%; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .section-rays { display: none; }
+  }
+</style>

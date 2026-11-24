@@ -1,180 +1,57 @@
-<section
-  id="about"
-  class="relative min-h-screen bg-black py-24 px-8 md:px-24 font-['Inter'] overflow-hidden"
->
-  <div class="absolute inset-0 -z-10">
-    <div
-      class="absolute top-1/2 left-1/4 w-96 h-96 bg-purple-600/10 rounded-full blur-3xl"
-    >
-    </div>
-    <div
-      class="absolute bottom-1/4 right-1/4 w-80 h-80 bg-indigo-600/10 rounded-full blur-3xl"
-    >
-    </div>
-  </div>
+---
+import SectionRays from "./SectionRays.astro";
+---
 
-  <div class="max-w-6xl mx-auto">
-    <div class="mb-16">
-      <span
-        data-about-animate
-        class="inline-block text-xs tracking-[0.3em] uppercase text-purple-400 mb-4 opacity-0"
-      >
-        <span data-i18n="about.label">Sobre mí</span>
-      </span>
-      <h2
-        data-about-animate
-        class="text-4xl md:text-5xl lg:text-6xl font-black text-white opacity-0"
-      >
-        <span data-i18n-html="about.title">Convirtiendo ideas en <span>realidad digital</span></span>
-      </h2>
-    </div>
-
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-      <div class="space-y-6">
-        <p
-          data-about-animate
-          class="text-lg md:text-xl text-white/70 leading-relaxed opacity-0"
-        >
-          <span data-i18n-html="about.intro">Hola, soy <strong>Pablo Montero</strong>, enfocado en arquitectura de sistemas y desarrollo de productos. Me apasiona transformar problemas complejos en experiencias digitales de alto impacto, priorizando siempre el <strong>código limpio</strong>, la escalabilidad y el diseño centrado en el usuario.</span>
-        </p>
-
-        <p
-          data-about-animate
-          class="text-white/50 leading-relaxed opacity-0 mt-4"
-        >
-          <span data-i18n-html="about.experience">A lo largo de mi carrera, he dominado diversos <strong>paradigmas de programación</strong> y <strong>frameworks</strong> líderes en la industria, lo que me permite diseñar soluciones flexibles y potentes. Mi experiencia va más allá de escribir código: me enfoco en todo el ciclo de vida del software, desde diseñar <strong>arquitecturas escalables</strong> y gestionar sistemas de datos complejos hasta <strong>automatizar despliegues</strong>.</span>
-        </p>
+<section id="about" class="section-space about" aria-labelledby="about-title" data-about>
+  <SectionRays origin="top-left" />
+  <div class="site-frame about-layout">
+    <header>
+      <p class="eyebrow" data-i18n="about.label" data-about-label>Sobre mí</p>
+      <h2 id="about-title" class="display section-title" data-i18n-html="about.title" data-about-title>Convirtiendo ideas en <span>realidad digital</span></h2>
+    </header>
+    <div>
+      <div class="about-copy" data-about-copy>
+        <p data-i18n-html="about.intro">Hola, soy <strong>Pablo Montero</strong>, enfocado en arquitectura de sistemas y desarrollo de productos. Me apasiona transformar problemas complejos en experiencias digitales de alto impacto, priorizando siempre el <strong>código limpio</strong>, la escalabilidad y el diseño centrado en el usuario.</p>
+        <p data-i18n-html="about.experience">A lo largo de mi carrera, he dominado diversos <strong>paradigmas de programación</strong> y <strong>frameworks</strong> líderes en la industria, lo que me permite diseñar soluciones flexibles y potentes. Mi experiencia va más allá de escribir código: me enfoco en todo el ciclo de vida del software, desde diseñar <strong>arquitecturas escalables</strong> y gestionar sistemas de datos complejos hasta <strong>automatizar despliegues</strong>.</p>
       </div>
-
-      <div class="space-y-4">
-        <div
-          data-about-animate
-          class="group p-6 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm hover:bg-white/10 transition-all duration-300 opacity-0"
-        >
-          <div class="flex items-start gap-4">
-            <div class="p-3 rounded-xl bg-purple-500/20 text-purple-400">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="w-6 h-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M12 14l9-5-9-5-9 5 9 5z"></path>
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"
-                ></path>
-              </svg>
-            </div>
-            <div>
-              <h3 class="text-lg font-semibold text-white mb-1"><span data-i18n="about.education">Educación</span></h3>
-              <p class="text-white/50 text-sm leading-relaxed">
-                Universidad Técnica de Ambato - <span data-i18n-html="about.semester">Actualmente en mi <span class="text-white/80">séptimo semestre</span></span>
-              </p>
-            </div>
-          </div>
+      <dl class="about-notes" data-about-notes>
+        <div>
+          <dt class="eyebrow" data-i18n="about.education">Educación</dt>
+          <dd>Universidad Técnica de Ambato · <span data-i18n-html="about.semester">Actualmente en mi <span>séptimo semestre</span></span></dd>
         </div>
-
-        <div
-          data-about-animate
-          class="group p-6 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm hover:bg-white/10 transition-all duration-300 opacity-0"
-        >
-          <div class="flex items-start gap-4">
-            <div class="p-3 rounded-xl bg-indigo-500/20 text-indigo-400">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="w-6 h-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"
-                ></path>
-              </svg>
-            </div>
-            <div>
-              <h3 class="text-lg font-semibold text-white mb-2">
-                <span data-i18n="about.communication">Comunicación efectiva</span>
-              </h3>
-              <p class="text-white/50 text-sm">
-                <span data-i18n="about.communicationText">Creo en una comunicación clara y transparente.</span>
-              </p>
-            </div>
-          </div>
+        <div>
+          <dt class="eyebrow" data-i18n="about.communication">Comunicación efectiva</dt>
+          <dd data-i18n="about.communicationText">Creo en una comunicación clara y transparente.</dd>
         </div>
-
-        <div
-          data-about-animate
-          class="group p-6 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm hover:bg-white/10 transition-all duration-300 opacity-0"
-        >
-          <div class="flex items-start gap-4">
-            <div class="p-3 rounded-xl bg-pink-500/20 text-pink-400">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="w-6 h-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                ></path>
-              </svg>
-            </div>
-            <div>
-              <h3 class="text-lg font-semibold text-white mb-2">
-                <span data-i18n="about.values">Valores</span>
-              </h3>
-              <p class="text-white/50 text-sm">
-                <span data-i18n="about.valuesText">La integridad, el respeto y la empatía son mis valores fundamentales.</span>
-              </p>
-            </div>
-          </div>
+        <div>
+          <dt class="eyebrow" data-i18n="about.values">Valores</dt>
+          <dd data-i18n="about.valuesText">La integridad, el respeto y la empatía son mis valores fundamentales.</dd>
         </div>
-      </div>
+      </dl>
     </div>
   </div>
 </section>
 
-<script>
-  import { gsap } from "gsap";
-  import { ScrollTrigger } from "gsap/ScrollTrigger";
-
-  gsap.registerPlugin(ScrollTrigger);
-
-  document.addEventListener("DOMContentLoaded", () => {
-    const aboutElements = document.querySelectorAll("[data-about-animate]");
-
-    aboutElements.forEach((el, index) => {
-      // Set initial state
-      gsap.set(el, { opacity: 0, y: 30 });
-
-      gsap.to(el, {
-        opacity: 1,
-        y: 0,
-        duration: 0.8,
-        delay: index * 0.1,
-        ease: "power3.out",
-        scrollTrigger: {
-          trigger: el,
-          start: "top 90%",
-          toggleActions: "play none none reverse",
-        },
-      });
-    });
-  });
-</script>
+<style>
+  .about {
+    position: relative;
+    isolation: isolate;
+    min-height: 100%;
+    border-block-start: 1px solid var(--rule);
+    background: radial-gradient(ellipse at 0% 0%, #2a1e16 0%, var(--ink) 62%);
+    background-color: var(--ink);
+    background-size: 100% 100dvh;
+    background-repeat: no-repeat;
+  }
+  :global([data-horizontal]) .about { padding-block-start: clamp(7rem, 15.5svh, 10rem); }
+  :global(.portfolio-viewport:not([data-horizontal])) .about { border-block-start: 0; background: var(--ink); }
+  .about-layout { display: grid; grid-template-columns: minmax(0,.85fr) minmax(0,1fr); gap: clamp(1rem,7vw,7rem); }
+  .about h2 { font-size: clamp(3rem,6vw,6rem); }
+  .about h2 :global(span) { color: var(--gold); font-style: italic; }
+  .about-copy { display: grid; gap: 1rem; color: var(--muted); line-height: 1.75; }
+  .about-copy :global(strong) { color: var(--paper); font-weight: 600; }
+  .about-notes { margin-top: 1.9rem; border-block-start: 1px solid var(--rule); }
+  .about-notes > div { border-block-end: 1px solid var(--rule); padding-block: .85rem; }
+  .about-notes dd { margin-top: .35rem; font-size: .86rem; color: var(--muted); }
+  @media (max-width: 760px) { .about-layout { grid-template-columns: 1fr; } }
+</style>

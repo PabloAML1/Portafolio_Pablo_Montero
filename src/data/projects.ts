@@ -171,3 +171,10 @@ The platform includes client-side form validation, efficient state management, a
     }
 
 ];
+
+export const spanishProjects: Record<number, Pick<Project, "title" | "type" | "description" | "features">> = {
+    1: { title: 'Sistema de combustible', type: 'Full Stack', description: 'Sistema diseñado para controlar el consumo de combustible en rutas de transporte.', features: ['Autenticación y autorización de usuarios', 'Arquitectura de microservicios', 'Bases de datos distribuidas', 'Informes de análisis de combustible', 'Panel de administración', 'Despliegue en Google Cloud', 'Arquitectura monorepo'] },
+    2: { title: 'Centro de control hospitalario', type: 'Full Stack', description: 'Plataforma web diseñada para gestionar hospitales, personal médico y consultas de pacientes desde un sistema centralizado.', features: ['Gestión de hospitales y personal médico', 'Registros de consultas de pacientes', 'Autenticación con acceso por roles', 'Bases de datos MySQL distribuidas con replicación', 'Entorno local con Docker', 'Paneles de administración y hospitales', 'Arquitectura de base de datos maestro-réplica'] },
+    3: { title: 'BookingView – Plataforma hotelera', type: 'Full Stack', description: 'Plataforma full stack de reservas hoteleras para web y móvil que conecta propietarios de hoteles con viajeros.', features: ['Aplicaciones web y móvil (React y React Native)', 'Autenticación basada en roles', 'Gestión de hoteles y habitaciones', 'Sistema de búsqueda y reservas', 'Integración de pagos con Stripe', 'Panel de administración'] },
+    4: { title: 'Proyecto GPIS – Plataforma de autenticación', type: 'Full Stack', description: 'Plataforma full stack de autenticación con inicio de sesión, registro y validación segura de formularios.', features: ['Autenticación de usuarios (inicio de sesión y registro)', 'Validación de formularios en el cliente', 'Gestión de estado con TanStack Query', 'Componentes de interfaz modernos', 'Backend NestJS con TypeScript', 'Enrutamiento del cliente', 'Seguridad de tipos de extremo a extremo'] },
+};

@@ -40,3 +40,11 @@ All commands are run from the root of the project, from a terminal:
 | `npm run preview`         | Preview your build locally, before deploying     |
 | `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
 | `npm run astro -- --help` | Get help using the Astro CLI                     |
+
+## Chat en vivo
+
+Con `npm run dev`, el chat usa la ruta local `/api/live-chat`. Puedes probar la sala abriendo el portafolio en dos pestañas.
+
+Para producción, hospeda `npm run chat:server` como un proceso Node.js con HTTPS y soporte para conexiones SSE. El servidor usa `PORT` (8787 por defecto) y acepta los orígenes indicados en `CHAT_ALLOWED_ORIGINS`, separados por comas. Usa el origen completo del portafolio, como `https://portafolio.example.com`.
+
+Antes de compilar Astro, configura `PUBLIC_CHAT_URL` con la URL completa del servicio, como `https://chat.example.com/api/live-chat`. Agrégala al entorno de compilación de Astro o a `.env.production`. El servidor guarda hasta 30 mensajes en memoria. Ejecuta una sola instancia para que todos los visitantes compartan la misma sala y coloca el servicio detrás de un proxy que no almacene ni retenga las respuestas SSE.

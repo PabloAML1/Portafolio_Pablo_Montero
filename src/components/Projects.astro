@@ -1,25 +1,228 @@
 ---
-import { ProjectsPlaylist } from "./ReactBits/ProjectsPlaylist";
+import ProjectDetails from "./ProjectDetails.astro";
+import { projects, spanishProjects } from "../data/projects";
 ---
+<section id="projects" aria-labelledby="projects-title" data-projects style={`--project-count: ${projects.length}`}>
+  <div class="project-stage" data-project-stage>
+    <header class="site-frame project-header" data-project-header>
+      <h2 class="eyebrow" id="projects-title" data-i18n="projects.label">Trabajos destacados</h2>
+      <div class="project-controls" data-project-controls hidden>
+        <a href={`#${projects[0].slug}`} data-project-prev aria-label="Proyecto anterior" aria-disabled="true" data-i18n-aria="projects.previous">←</a>
+        <span data-project-count aria-live="polite">01 / {String(projects.length).padStart(2, "0")}</span>
+        <a href={`#${projects[1]?.slug}`} data-project-next aria-label="Siguiente proyecto" data-i18n-aria="projects.next">→</a>
+      </div>
+    </header>
 
-<section
-  id="projects"
-  class="relative min-h-screen bg-black px-8 md:px-24"
->
-  <!-- Background gradient -->
-  <div
-    class="absolute inset-0 bg-linear-to-b from-black via-purple-950/10 to-black pointer-events-none"
-  >
-  </div>
+    <span id="project-cover-action" data-i18n="projects.details" hidden>Ver detalles</span>
+    <div class="project-track" data-project-track>
+      {projects.map((project) => {
+        const es = spanishProjects[project.id];
+        return (
+          <article class="project-card" data-project-card aria-labelledby={`project-title-${project.id}`}>
+            <button
+              class="project-cover"
+              type="button"
+              data-project-preview
+              data-dialog-open={`project-${project.id}`}
+              aria-labelledby={`project-cover-action project-title-${project.id}`}
+              aria-haspopup="dialog"
+            >
+              <span class="project-art" data-project-art>
+                <img src={project.img} alt="" loading="lazy" decoding="async" draggable="false" />
+              </span>
+            </button>
+            <div class="site-frame project-caption" data-project-caption>
+              <h3 class="display" id={`project-title-${project.id}`}><span data-lang="es">{es.title}</span><span data-lang="en">{project.title}</span></h3>
+              <div class="project-copy">
+                <p class="eyebrow">{project.type}</p>
+                <p class="project-summary"><span data-lang="es">{es.description}</span><span data-lang="en">{project.description}</span></p>
+                <button class="line-link" type="button" data-dialog-open={`project-${project.id}`} aria-haspopup="dialog"><span data-i18n="projects.details">Ver detalles</span> <span aria-hidden="true">↗</span></button>
+              </div>
+            </div>
+          </article>
+        );
+      })}
+    </div>
 
-  <!-- Content -->
-  <div class="relative z-10">
-    <ProjectsPlaylist client:visible />
+    <div class="site-frame project-footer">
+      <a class="line-link" href="https://github.com/PabloAML1?tab=repositories" target="_blank" rel="noopener noreferrer"><span data-i18n="projects.viewAll">Ver todos los proyectos</span> <span aria-hidden="true">↗</span></a>
+      <span class="project-progress" aria-hidden="true"></span>
+    </div>
+    <span class="project-cursor" data-project-cursor aria-hidden="true" hidden><span>↗</span></span>
   </div>
+  {projects.map((project, index) =>
+    <div class="project-stop" id={project.slug} style={`--project-slot: ${index}`} data-project-stop={project.id} aria-hidden="true" />)}
+  {projects.map((project) => <ProjectDetails project={project} translation={spanishProjects[project.id]} />)}
 </section>
 
 <style>
-  #projects {
+  #projects { position: relative; background: var(--ink); }
+  .project-stage {
     position: relative;
+    isolation: isolate;
+    --project-top: clamp(5.4rem, 15svh, 9rem);
+    --project-bottom: clamp(4.7rem, 13svh, 8rem);
+    --project-pointer-x: 0px;
+    --project-pointer-y: 0px;
+    --project-pan-x: 0px;
+    --project-pan-y: 0px;
+  }
+  .project-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .8rem;
+    padding-top: var(--project-top);
+    padding-bottom: 1.2rem;
+    pointer-events: none;
+    text-shadow: 0 2px 18px rgb(0 0 0 / .55);
+  }
+  .project-controls {
+    display: flex;
+    align-items: center;
+    gap: .55rem;
+    flex: none;
+    font-variant-numeric: tabular-nums;
+    font-size: .72rem;
+    pointer-events: auto;
+  }
+  .project-controls a {
+    display: grid;
+    place-items: center;
+    width: clamp(2.25rem, 4vw, 2.85rem);
+    aspect-ratio: 1;
+    border: 1px solid var(--rule);
+    border-radius: 50%;
+    background: rgb(16 14 13 / .48);
+    color: var(--paper);
+    font-size: 1.08rem;
+  }
+  .project-controls a:hover { border-color: var(--gold); color: var(--gold); }
+  .project-controls a[aria-disabled="true"] { opacity: .42; pointer-events: none; }
+  .project-track { display: grid; gap: .6rem; }
+  .project-card { position: relative; isolation: isolate; display: grid; align-items: end; min-height: min(38rem, 82svh); background: var(--ink); }
+  .project-cover, .project-art { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .project-cover { z-index: 0; overflow: clip; user-select: none; }
+  .project-cover:focus-visible { outline-offset: -5px; }
+  .project-art img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: translate3d(var(--project-pan-x, 0px), var(--project-pan-y, 0px), 0) scale(1.075);
+  }
+  .project-cover::before, .project-cover::after { content: ""; position: absolute; inset: 0; pointer-events: none; }
+  .project-cover::before {
+    z-index: 1;
+    background:
+      linear-gradient(90deg, rgb(12 10 9 / .23), transparent 69%),
+      linear-gradient(180deg, rgb(12 10 9 / .93), rgb(12 10 9 / .49) 27%, rgb(12 10 9 / .19) 49%, rgb(12 10 9 / .83) 82%, #100e0d 100%);
+  }
+  .project-cover::after {
+    z-index: 2;
+    opacity: 0;
+    background: radial-gradient(ellipse 145px 125px at var(--project-pointer-x, 50%) var(--project-pointer-y, 50%), rgb(244 224 195 / .24), rgb(244 224 195 / .05) 64%, transparent);
+    mix-blend-mode: screen;
+    transition: opacity .32s ease;
+  }
+  [data-project-hover] .project-card:not([inert]) .project-cover::after { opacity: 1; }
+  .project-caption {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(13rem, 23rem);
+    align-items: end;
+    gap: clamp(1rem, 4vw, 4.5rem);
+    padding-block: 1.2rem;
+    pointer-events: none;
+    text-shadow: 0 2px 18px rgb(0 0 0 / .55);
+  }
+  .project-caption h3 {
+    width: min(100%, 16ch);
+    font-size: clamp(2.3rem, min(6.45vw, 11.7svh), 7.6rem);
+    line-height: .89;
+    text-wrap: balance;
+  }
+  .project-copy { border-top: 1px solid var(--rule); padding-top: .75rem; }
+  .project-copy button { pointer-events: auto; }
+  .project-summary { margin-top: .35rem; color: var(--paper); font-size: clamp(.79rem, 1.35vw, 1rem); line-height: 1.5; }
+  .project-footer { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding-block: .6rem 1.25rem; pointer-events: none; }
+  .project-footer a { pointer-events: auto; }
+  .project-progress { display: none; }
+  .project-stop { display: none; }
+  .project-cursor {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 4;
+    display: grid;
+    place-items: center;
+    width: 2.7rem;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    border: 1px solid rgb(244 236 224 / .68);
+    background: rgb(16 14 13 / .38);
+    color: var(--paper);
+    font-size: 1.25rem;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity .2s ease;
+    transform: translate3d(calc(var(--project-pointer-x) + 14px), calc(var(--project-pointer-y) + 12px), 0);
+  }
+  [data-project-hover] .project-cursor { opacity: 1; }
+  [data-project-dragging] .project-cover { cursor: grabbing; }
+
+  :global([data-horizontal]) #projects { flex: 0 0 calc(var(--slide-width) * var(--project-count)); }
+  :global([data-horizontal]) .project-stage { position: sticky; left: 0; width: var(--slide-width); height: 100%; overflow: clip; }
+  :global([data-horizontal]) .project-track, :global([data-horizontal]) .project-card { position: absolute; inset: 0; min-height: 0; }
+  :global([data-horizontal]) .project-track { touch-action: pinch-zoom; }
+  :global([data-horizontal]) .project-track::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    --edge-fade: clamp(1.6rem, 9vw, 10rem);
+    background: linear-gradient(90deg, var(--ink), transparent var(--edge-fade), transparent calc(100% - var(--edge-fade)), var(--ink));
+  }
+  :global([data-horizontal]) .project-caption { padding-bottom: var(--project-bottom); }
+  :global([data-horizontal]) .project-header, :global([data-horizontal]) .project-footer { position: absolute; inset-inline: 0; z-index: 3; }
+  :global([data-horizontal]) .project-header { top: 0; }
+  :global([data-horizontal]) .project-footer { bottom: 0; }
+  :global([data-horizontal]) .project-stop { display: block; position: absolute; inset: 0 auto auto calc(var(--slide-width) * var(--project-slot)); width: var(--slide-width); height: 1px; scroll-snap-align: start; pointer-events: none; }
+  :global([data-horizontal]) .project-progress { display: block; height: 1px; width: clamp(5rem, 20vw, 17rem); background: var(--rule); }
+  .project-progress::after { content: ""; display: block; height: 100%; width: 100%; background: var(--gold); transform: scaleX(var(--project-progress, 0)); transform-origin: left; }
+
+  :global(.portfolio-viewport:not([data-horizontal])) #projects { padding-block: clamp(3.75rem, 8vw, 6rem) 1rem; }
+  :global(.portfolio-viewport:not([data-horizontal])) .project-header { padding-block: 0 .85rem; }
+  :global(.portfolio-viewport:not([data-horizontal])) .project-controls a { width: 2.75rem; }
+  :global(.portfolio-viewport:not([data-horizontal])) .project-card { min-height: 0; }
+  :global(.portfolio-viewport:not([data-horizontal])) .project-cover {
+    position: relative;
+    min-height: 0;
+    aspect-ratio: 16 / 9;
+    max-height: 29rem;
+    touch-action: pan-y pinch-zoom;
+  }
+  :global(.portfolio-viewport:not([data-horizontal])) .project-cover::before {
+    background: linear-gradient(to bottom, var(--ink), transparent 12% 83%, var(--ink));
+  }
+  :global(.portfolio-viewport:not([data-horizontal])) .project-art img { object-fit: contain; object-position: center; transform: none; }
+  :global(.portfolio-viewport:not([data-horizontal])) .project-caption { padding-block: .8rem .25rem; }
+  :global(.portfolio-viewport:not([data-horizontal])) .project-caption h3 { width: auto; font-size: clamp(2rem, 6vw, 4.15rem); }
+
+  @media (max-width: 680px) {
+    .project-stage { --project-top: clamp(5.25rem, 13svh, 7rem); --project-bottom: clamp(4.35rem, 12svh, 6.4rem); }
+    .project-caption { grid-template-columns: 1fr; gap: .9rem; }
+    .project-caption h3 { font-size: clamp(2.1rem, min(9.75vw, 8.2svh), 4rem); }
+    .project-copy { width: min(100%, 26rem); }
+    .project-art img { object-position: 60% center; }
+  }
+  @media (max-height: 540px) {
+    .project-stage { --project-top: 4.25rem; --project-bottom: 3.8rem; }
+    .project-caption h3 { font-size: clamp(1.65rem, 7.3svh, 2.9rem); }
+    .project-caption { gap: .4rem; }
+    .project-copy { padding-top: .38rem; }
+    .project-footer { padding-block: 0 .45rem; }
   }
 </style>

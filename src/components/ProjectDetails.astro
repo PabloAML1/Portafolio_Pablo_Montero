@@ -1,0 +1,110 @@
+---
+import type { Project } from "../data/projects";
+interface Props {
+  project: Project;
+  translation: Pick<Project, "title" | "description" | "features">;
+}
+
+const { project, translation } = Astro.props;
+const images = project.images?.length ? project.images : [project.img];
+const modalTitle = `project-${project.id}-title`;
+---
+<dialog class="case-dialog" id={`project-${project.id}`} aria-labelledby={modalTitle} data-case-dialog>
+  <div class="case-layout">
+    <button type="button" class="line-link case-back" data-case-close autofocus>
+      <span aria-hidden="true">←</span> <span data-i18n="projects.back">Volver</span>
+    </button>
+    <div class="case-copy" data-case-copy>
+      <p class="eyebrow">{project.type}</p>
+      <h2 id={modalTitle} class="display"><span data-lang="es">{translation.title}</span><span data-lang="en">{project.title}</span></h2>
+      <p class="case-summary"><span data-lang="es">{translation.description}</span><span data-lang="en">{project.description}</span></p>
+      <div class="case-meta">
+        <p class="eyebrow" data-i18n="projects.technologies">Tecnologías</p>
+        <ul class="project-tags">{project.technologies.map((tech) => <li>{tech}</li>)}</ul>
+        <details>
+          <summary class="line-link"><span>{project.features.length}</span> <span data-i18n="projects.features">Funcionalidades</span></summary>
+          <p class="case-description" lang="en">{project.longDescription}</p>
+          <ul class="project-features" data-lang="es">{translation.features.map((feature) => <li>{feature}</li>)}</ul>
+          <ul class="project-features" data-lang="en">{project.features.map((feature) => <li>{feature}</li>)}</ul>
+        </details>
+      </div>
+      <div class="project-links">
+        {project.github && <a class="line-link" href={project.github} target="_blank" rel="noopener noreferrer" data-i18n="projects.viewCode">Ver código</a>}
+        {project.live?.startsWith("https://") && <a class="line-link" href={project.live} target="_blank" rel="noopener noreferrer" data-i18n="projects.live">Ver proyecto</a>}
+      </div>
+    </div>
+    <figure class="case-gallery">
+      <div class="case-images" data-case-images>
+        {images.map((src, index) => (
+          <img src={src} alt={`${project.title} · ${index + 1}`} decoding="async" loading="lazy" aria-hidden={index !== 0} data-case-slide />
+        ))}
+      </div>
+      {images.length > 1 && (
+        <figcaption class="case-gallery-controls">
+          <button type="button" class="line-link" data-case-step="-1" data-i18n-aria="gallery.previous" aria-label="Imagen anterior">←</button>
+          <span data-case-count aria-live="off">1 / {images.length}</span>
+          <button type="button" class="line-link" data-case-step="1" data-i18n-aria="gallery.next" aria-label="Siguiente imagen">→</button>
+          <button type="button" class="line-link case-play" data-case-play data-i18n-aria="gallery.pause" aria-label="Pausar galería">
+            <span aria-hidden="true" data-case-icon>Ⅱ</span>
+          </button>
+        </figcaption>
+      )}
+    </figure>
+  </div>
+</dialog>
+
+<style>
+  .case-dialog {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100dvh;
+    max-width: none;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden auto;
+    overscroll-behavior: contain;
+    background: transparent;
+    color: var(--paper);
+    --case-shade: .96;
+  }
+  .case-dialog::backdrop { background: rgb(10 9 8 / var(--case-shade, .96)); }
+  .case-layout {
+    display: grid;
+    grid-template-columns: minmax(0,.86fr) minmax(0,1.14fr);
+    grid-template-areas: "back gallery" "copy gallery";
+    align-content: center;
+    align-items: center;
+    gap: .9rem clamp(1.5rem,4vw,5rem);
+    width: min(100%,112rem);
+    min-height: 100%;
+    margin-inline: auto;
+    padding: clamp(1.5rem,6vh,5rem) var(--gutter);
+  }
+  .case-back { grid-area: back; justify-self: start; }
+  .case-copy { grid-area: copy; align-self: start; }
+  .case-copy h2 { font-size: clamp(2.75rem,5.6vw,6.5rem); line-height: .88; margin: .18em 0 .3em; }
+  .case-summary { color: var(--muted); font-size: clamp(1rem,1.5vw,1.3rem); line-height: 1.42; margin-bottom: 1rem; }
+  .case-meta { display: grid; border-top: 1px solid var(--rule); gap: .55rem; padding-top: .85rem; }
+  .case-description { margin-bottom: .7rem; white-space: pre-line; color: var(--muted); font-size: .85rem; }
+  .project-tags, .project-links { display: flex; flex-wrap: wrap; gap: .45rem .8rem; }
+  .project-tags li { color: var(--gold); font-size: .78rem; }
+  .project-features { padding-inline-start: 1.15rem; list-style: disc; color: var(--muted); font-size: .85rem; }
+  .project-links { margin-top: .45rem; }
+  .case-gallery { grid-area: gallery; min-width: 0; margin: 0; }
+  .case-images { position: relative; overflow: clip; height: min(66dvh,46rem); border: 1px solid var(--rule); border-radius: .65rem; background: #100e0d; }
+  .case-images img { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: contain; }
+  .case-images img:not(:first-child) { opacity: 0; }
+  .case-gallery-controls { position: relative; display: flex; justify-content: center; align-items: center; gap: 1rem; color: var(--muted); font-size: .8rem; }
+  .case-gallery-controls button { font-size: 1.2rem; min-width: 2.5rem; }
+  .case-play { position: absolute; right: .25rem; }
+  @media (max-width: 760px) {
+    .case-layout { grid-template-columns: 1fr; grid-template-areas: "back" "copy" "gallery"; }
+    .case-images { height: auto; aspect-ratio: 4/3; }
+  }
+</style>
+
+<script>
+  import "../scripts/project-details";
+</script>

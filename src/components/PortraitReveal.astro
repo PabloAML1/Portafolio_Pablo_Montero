@@ -1,0 +1,88 @@
+<div class="portrait-stage" data-fluid-portrait data-marble-src="/images/portrait-marble.webp">
+  <div class="portrait-art">
+    <img src="/images/portrait.webp" alt="Pablo Montero" width="900" height="1350" decoding="async" />
+    <canvas aria-hidden="true" hidden></canvas>
+  </div>
+  <button class="portrait-toggle" type="button" aria-label="Mostrar retrato en mármol" data-i18n-aria="hero.marbleToggle" aria-pressed="false" hidden></button>
+</div>
+
+<style>
+  .portrait-stage { position: relative; aspect-ratio: 1 / 1.17; }
+  .portrait-art {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    mask-image:
+      linear-gradient(black 60%, rgb(0 0 0 / .86) 70%, rgb(0 0 0 / .43) 83%, rgb(0 0 0 / .12) 93%, transparent 100%),
+      radial-gradient(ellipse 79% 97% at 50% 23%, black 60%, rgb(0 0 0 / .78) 73%, transparent 100%);
+    mask-composite: intersect;
+  }
+  .portrait-art img, .portrait-art canvas { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
+  .portrait-art img { object-fit: cover; object-position: center 12%; }
+  .portrait-stage[data-fluid-ready] img { opacity: 0; }
+  .portrait-toggle { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: transparent; touch-action: manipulation; }
+  @media (prefers-reduced-motion: reduce) {
+    .portrait-stage canvas, .portrait-stage:not([data-static-portrait]) .portrait-toggle { display: none; }
+    .portrait-stage[data-fluid-ready] img { opacity: 1; }
+  }
+</style>
+
+<script>
+  import { desktopPresentation } from "../scripts/portfolio-layout";
+
+  const frame = document.querySelector<HTMLElement>("[data-fluid-portrait]");
+  const photo = frame?.querySelector<HTMLImageElement>("img");
+  const canvas = frame?.querySelector<HTMLCanvasElement>("canvas");
+  const toggle = frame?.querySelector<HTMLButtonElement>("button");
+  const marbleSource = frame?.dataset.marbleSrc;
+  if (frame && photo && canvas && toggle && marbleSource) {
+    const desktop = matchMedia(desktopPresentation);
+    const normalSource = photo.src;
+    let disposeFluid: (() => void) | undefined;
+    let version = 0;
+    let marbleLoad: Promise<void> | undefined;
+
+    const sync = async () => {
+      const current = ++version;
+      disposeFluid?.();
+      disposeFluid = undefined;
+      photo.src = normalSource;
+      toggle.setAttribute("aria-pressed", "false");
+      frame.toggleAttribute("data-static-portrait", !desktop.matches);
+      toggle.hidden = desktop.matches;
+      if (!desktop.matches) return;
+      const { mountPortrait } = await import("../scripts/portrait-fluid");
+      if (current === version) disposeFluid = mountPortrait(frame, photo, canvas, toggle, marbleSource);
+    };
+
+    toggle.addEventListener("click", async () => {
+      if (desktop.matches) return;
+      if (toggle.getAttribute("aria-pressed") === "true") {
+        photo.src = normalSource;
+        toggle.setAttribute("aria-pressed", "false");
+        return;
+      }
+      if (toggle.hasAttribute("aria-busy")) return;
+      const current = version;
+      toggle.setAttribute("aria-busy", "true");
+      try {
+        if (!marbleLoad) {
+          const marble = new Image();
+          marble.src = marbleSource;
+          marbleLoad = marble.decode();
+        }
+        await marbleLoad;
+        if (current !== version) return;
+        photo.src = marbleSource;
+        toggle.setAttribute("aria-pressed", "true");
+      } catch {
+        marbleLoad = undefined;
+      } finally {
+        toggle.removeAttribute("aria-busy");
+      }
+    });
+
+    void sync();
+    desktop.addEventListener("change", () => { void sync(); });
+  }
+</script>

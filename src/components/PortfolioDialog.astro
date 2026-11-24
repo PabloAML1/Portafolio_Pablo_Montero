@@ -1,0 +1,46 @@
+---
+interface Props {
+  id: string;
+  title: string;
+  image: string;
+}
+const { id, title, image } = Astro.props;
+---
+<dialog class="certificate-dialog" id={id} aria-label={title} data-certificate-dialog>
+  <button class="line-link certificate-back" type="button" data-certificate-back autofocus>
+    <span aria-hidden="true">←</span><span data-i18n="cert.back">Volver</span>
+  </button>
+  <img class="certificate-full" src={image} alt={title} decoding="async" loading="lazy" />
+</dialog>
+<style>
+  .certificate-dialog {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100dvh;
+    max-width: none;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    overflow: clip;
+    background: transparent;
+    color: var(--paper);
+    --certificate-shade: .94;
+  }
+  .certificate-dialog[open] { display: grid; place-items: center; }
+  .certificate-dialog::backdrop { background: rgb(10 9 8 / var(--certificate-shade, .94)); }
+  .certificate-back {
+    position: absolute;
+    z-index: 1;
+    top: clamp(.8rem, 3svh, 1.7rem);
+    left: var(--gutter);
+  }
+  .certificate-full {
+    display: block;
+    max-width: min(92vw, 86rem);
+    max-height: calc(100dvh - 7rem);
+  }
+</style>
+<script>
+  import "../scripts/certificate-dialog";
+</script>

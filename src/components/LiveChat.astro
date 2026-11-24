@@ -1,0 +1,150 @@
+---
+const endpoint = import.meta.env.PUBLIC_CHAT_URL || (import.meta.env.DEV ? "/api/live-chat" : "");
+const avatars = [
+  { id: "sun", symbol: "☀", title: "Sol", english: "Sun" },
+  { id: "moon", symbol: "☾", title: "Luna", english: "Moon" },
+  { id: "leaf", symbol: "❧", title: "Hoja", english: "Leaf" },
+  { id: "bolt", symbol: "ϟ", title: "Rayo", english: "Lightning" },
+  { id: "feather", symbol: "✎", title: "Pluma", english: "Quill" },
+  { id: "key", symbol: "⟡", title: "Cristal", english: "Crystal" },
+];
+---
+{endpoint && (
+  <div class="live-chat" data-live-chat={endpoint}>
+    <button class="chat-trigger" type="button" data-chat-open aria-controls="live-chat-dialog" aria-haspopup="dialog" aria-expanded="false">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
+        <path d="M15 18v-1a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v1m18 0v-1a4 4 0 0 0-3-3.9" />
+        <circle cx="9" cy="7.5" r="3" /><path d="M16 4.6a3 3 0 0 1 0 5.8" />
+      </svg>
+      <span class="sr-only" data-i18n="chat.title">Chat en vivo</span>
+      <span class="chat-count" data-chat-count>—</span>
+    </button>
+
+    <dialog class="chat-dialog" id="live-chat-dialog" data-chat-dialog aria-labelledby="live-chat-title">
+      <header class="chat-header">
+        <div>
+          <h2 class="display" id="live-chat-title" data-i18n="chat.title">Chat en vivo</h2>
+          <p class="chat-status" data-chat-status role="status" data-i18n="chat.connecting">Conectando…</p>
+        </div>
+        <button type="button" class="chat-close" data-chat-close data-i18n-aria="chat.close" aria-label="Cerrar chat">×</button>
+      </header>
+
+      <form class="chat-join" data-chat-join>
+        <p class="chat-join-note" data-i18n="chat.public">Tu nombre, avatar y mensajes serán visibles para quienes entren en la sala.</p>
+        <label>
+          <span data-i18n="chat.name">Tu nombre</span>
+          <input name="name" autocomplete="nickname" maxlength="24" required />
+        </label>
+        <fieldset>
+          <legend data-i18n="chat.avatar">Elige tu avatar</legend>
+          <div class="chat-avatars">
+            {avatars.map(({ id, symbol, title, english }, index) => (
+              <label>
+                <input class="sr-only" type="radio" name="avatar" value={id} checked={index === 0} />
+                <span class="chat-avatar" data-avatar={id} aria-hidden="true">{symbol}</span>
+                <span class="sr-only"><span data-lang="es">{title}</span><span data-lang="en">{english}</span></span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+        <button class="solid-link" type="submit" data-i18n="chat.join" disabled>Entrar al chat</button>
+      </form>
+
+      <div class="chat-room" data-chat-room hidden>
+        <div class="chat-roster">
+          <p class="eyebrow" data-i18n="chat.people">En la sala</p>
+          <ul data-chat-people></ul>
+        </div>
+        <div class="chat-thread" data-chat-thread tabindex="0" data-i18n-aria="chat.messages" aria-label="Mensajes">
+          <p class="chat-empty" data-chat-empty data-i18n="chat.empty">Todavía no hay mensajes. Saluda primero.</p>
+          <ol data-chat-messages role="log" aria-live="polite"></ol>
+        </div>
+        <form class="chat-compose" data-chat-compose>
+          <label class="sr-only" for="live-chat-message" data-i18n="chat.message">Mensaje</label>
+          <input id="live-chat-message" name="message" maxlength="280" data-i18n-placeholder="chat.placeholder" placeholder="Escribe un mensaje…" required />
+          <button type="submit" class="solid-link" data-i18n="chat.send">Enviar</button>
+        </form>
+      </div>
+      <p class="chat-error" data-chat-error role="status" hidden></p>
+    </dialog>
+  </div>
+)}
+<script>
+  import "../scripts/live-chat";
+</script>
+<style>
+  .chat-trigger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .4rem;
+    min-width: 3rem;
+    min-height: 2.25rem;
+    padding: .2rem .54rem;
+    border: 1px solid var(--rule);
+    border-radius: .4rem;
+    color: var(--paper);
+  }
+  .chat-count { min-width: .8em; font-variant-numeric: tabular-nums; }
+  .chat-dialog {
+    position: fixed;
+    inset: 5.25rem var(--gutter) auto auto;
+    margin: 0;
+    width: min(26rem, calc(100vw - 2 * var(--gutter)));
+    max-height: calc(100dvh - 6.5rem);
+    overflow: auto;
+    padding: 1.15rem;
+    border: 1px solid var(--rule);
+    border-radius: .6rem;
+    background: #1d1713;
+    color: var(--paper);
+    box-shadow: 0 1.2rem 4rem #0009;
+    text-shadow: none;
+  }
+  .chat-dialog::backdrop { background: rgb(16 14 13 / .44); }
+  .chat-header { display: flex; justify-content: space-between; align-items: flex-start; gap: .65rem; border-bottom: 1px solid var(--rule); padding-bottom: .75rem; }
+  .chat-header h2 { font-size: 2.4rem; line-height: .95; }
+  .chat-status, .chat-empty, .chat-error, .chat-join-note { color: var(--muted); font-size: .82rem; }
+  .chat-status, .chat-empty, .chat-error { margin-top: .4rem; }
+  .chat-error { color: #f0ac9f; }
+  .chat-close { font-size: 1.4rem; line-height: 1; padding: .3rem; }
+  .chat-join, .chat-room { display: grid; gap: .85rem; margin-top: .85rem; }
+  .chat-join > label { display: grid; gap: .35rem; }
+  .chat-join label, legend { color: var(--muted); font-size: .82rem; }
+  .chat-dialog input:not([type="radio"]) { width: 100%; min-width: 0; color: var(--paper); padding: .6rem .7rem; font-size: 1rem; border: 1px solid var(--rule); border-radius: .3rem; background: var(--ink); }
+  .chat-avatars { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .45rem; }
+  .chat-avatars label { cursor: pointer; }
+  .chat-avatar, .chat-dialog :global(.chat-avatar-mark) {
+    display: inline-grid;
+    flex: none;
+    place-items: center;
+    width: 2.15rem;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: #4a3627;
+    color: #f3dcc1;
+    font-size: 1.14rem;
+    line-height: 1;
+  }
+  .chat-dialog :global([data-avatar="moon"]) { background: #353854; color: #e3e6ff; }
+  .chat-dialog :global([data-avatar="leaf"]) { background: #354435; color: #e5edd5; }
+  .chat-dialog :global([data-avatar="bolt"]) { background: #4b361b; color: #ffe3a9; }
+  .chat-dialog :global([data-avatar="feather"]) { background: #4d3235; color: #f8d6d9; }
+  .chat-dialog :global([data-avatar="key"]) { background: #294549; color: #ccebf1; }
+  .chat-avatars input:checked + .chat-avatar, .chat-avatars input:focus-visible + .chat-avatar { outline: 2px solid var(--gold); outline-offset: 2px; }
+  .chat-join .solid-link { justify-self: start; }
+  .chat-dialog button:disabled { opacity: .48; }
+  .chat-roster ul { display: flex; flex-wrap: wrap; gap: .25rem .65rem; max-height: 4rem; overflow: auto; margin-top: .35rem; }
+  .chat-roster :global(li) { display: flex; gap: .35rem; align-items: center; font-size: .78rem; overflow-wrap: anywhere; }
+  .chat-roster :global(.chat-avatar-mark) { width: 1.25rem; font-size: .8rem; }
+  .chat-thread { min-height: 7rem; max-height: min(44dvh, 21rem); overflow: auto; border-block: 1px solid var(--rule); padding-block: .65rem; }
+  .chat-thread :global(li) { display: flex; align-items: flex-start; gap: .55rem; padding: .4rem 0; }
+  .chat-thread :global(strong) { display: block; font-size: .76rem; color: var(--gold); overflow-wrap: anywhere; }
+  .chat-thread :global(p:not(.chat-empty)) { font-size: .87rem; overflow-wrap: anywhere; white-space: pre-wrap; }
+  .chat-compose { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .5rem; }
+  .chat-compose .solid-link { padding-inline: .7rem; }
+  @media (max-width: 400px) {
+    .chat-dialog { inset-inline-end: 1rem; width: calc(100vw - 2rem); }
+    .chat-trigger { min-width: 2.5rem; gap: .28rem; padding-inline: .35rem; }
+  }
+</style>

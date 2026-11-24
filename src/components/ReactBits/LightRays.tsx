@@ -1,6 +1,5 @@
 import { useRef, useEffect, useState } from 'react';
 import { Renderer, Program, Triangle, Mesh } from 'ogl';
-import gsap from 'gsap';
 
 export type RaysOrigin =
     | 'top-center'
@@ -107,28 +106,21 @@ const LightRays: React.FC<LightRaysProps> = ({
     const cleanupFunctionRef = useRef<(() => void) | null>(null);
     const [isVisible, setIsVisible] = useState(false);
     const observerRef = useRef<IntersectionObserver | null>(null);
-    const hasAnimatedRef = useRef(false);
-
-    // Refs for GSAP animation values
-    const animatedValuesRef = useRef({
-        opacity: 0,
-        lightSpread: 0,
-        rayLength: 0,
-        saturation: 0
-    });
 
     useEffect(() => {
-        if (!containerRef.current) return;
+        const container = containerRef.current;
+        if (!container) return;
 
         observerRef.current = new IntersectionObserver(
             entries => {
                 const entry = entries[0];
                 setIsVisible(entry.isIntersecting);
             },
-            { threshold: 0.1 }
+            // Prepare the neighboring horizontal panel before its edge enters the viewport.
+            { root: container.closest("[data-portfolio-viewport]"), rootMargin: "0px 75%", threshold: 0 }
         );
 
-        observerRef.current.observe(containerRef.current);
+        observerRef.current.observe(container);
 
         return () => {
             if (observerRef.current) {
@@ -146,27 +138,26 @@ const LightRays: React.FC<LightRaysProps> = ({
             cleanupFunctionRef.current = null;
         }
 
-        const initializeWebGL = async () => {
-            if (!containerRef.current) return;
+        const initializeWebGL = () => {
+            const container = containerRef.current;
+            if (!container || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
-            await new Promise(resolve => setTimeout(resolve, 10));
-
-            if (!containerRef.current) return;
-
-            const renderer = new Renderer({
-                dpr: Math.min(window.devicePixelRatio, 2),
-                alpha: true
-            });
+            let renderer: Renderer;
+            try {
+                renderer = new Renderer({
+                    dpr: Math.min(window.devicePixelRatio, 1.5),
+                    alpha: true
+                });
+            } catch {
+                return;
+            }
             rendererRef.current = renderer;
 
             const gl = renderer.gl;
             gl.canvas.style.width = '100%';
             gl.canvas.style.height = '100%';
 
-            while (containerRef.current.firstChild) {
-                containerRef.current.removeChild(containerRef.current.firstChild);
-            }
-            containerRef.current.appendChild(gl.canvas);
+            container.replaceChildren(gl.canvas);
 
             const vert = `
 attribute vec2 position;
@@ -303,7 +294,7 @@ void main() {
             const updatePlacement = () => {
                 if (!containerRef.current || !renderer) return;
 
-                renderer.dpr = Math.min(window.devicePixelRatio, 2);
+                renderer.dpr = Math.min(window.devicePixelRatio, 1.5);
 
                 const { clientWidth: wCSS, clientHeight: hCSS } = containerRef.current;
                 renderer.setSize(wCSS, hCSS);
@@ -326,11 +317,6 @@ void main() {
 
                 uniforms.iTime.value = t * 0.001;
 
-                // Apply animated values from GSAP
-                uniforms.lightSpread.value = animatedValuesRef.current.lightSpread;
-                uniforms.rayLength.value = animatedValuesRef.current.rayLength;
-                uniforms.saturation.value = animatedValuesRef.current.saturation;
-
                 if (followMouse && mouseInfluence > 0.0) {
                     const smoothing = 0.92;
 
@@ -352,48 +338,6 @@ void main() {
             window.addEventListener('resize', updatePlacement);
             updatePlacement();
             animationIdRef.current = requestAnimationFrame(loop);
-
-            // GSAP entrance animation for light rays
-            if (!hasAnimatedRef.current && containerRef.current) {
-                hasAnimatedRef.current = true;
-
-                // Set initial values
-                animatedValuesRef.current = {
-                    opacity: 0,
-                    lightSpread: 0.1,
-                    rayLength: 0.3,
-                    saturation: 0
-                };
-
-                // Animate container opacity
-                gsap.fromTo(containerRef.current,
-                    { opacity: 0 },
-                    {
-                        opacity: 1,
-                        duration: 1.5,
-                        ease: "power2.out",
-                        delay: 0.3
-                    }
-                );
-
-                // Animate shader uniforms for dramatic reveal
-                gsap.to(animatedValuesRef.current, {
-                    lightSpread: lightSpread,
-                    rayLength: rayLength,
-                    saturation: saturation,
-                    duration: 2.5,
-                    ease: "power3.out",
-                    delay: 0.5
-                });
-            } else {
-                // If already animated, set final values
-                animatedValuesRef.current = {
-                    opacity: 1,
-                    lightSpread: lightSpread,
-                    rayLength: rayLength,
-                    saturation: saturation
-                };
-            }
 
             cleanupFunctionRef.current = () => {
                 if (animationIdRef.current) {

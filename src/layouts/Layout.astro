@@ -1,17 +1,24 @@
 ---
-import { ViewTransitions } from "astro:transitions";
+import LiveChat from "../components/LiveChat.astro";
+import { desktopPresentation } from "../scripts/portfolio-layout";
 
 interface Props {
   title?: string;
   description?: string;
 }
-
 const {
-  title = "Pablo - Software Engineer Portfolio",
-  description = "Portfolio profesional de Pablo, Estudiante de Ingeniería en Software",
+  title = "Pablo Montero | Software Engineer",
+  description = "Portafolio de Pablo Montero, desarrollador full stack enfocado en arquitectura de sistemas y desarrollo de productos.",
 } = Astro.props;
----
 
+const navigation = [
+  { href: "#about", key: "nav.about", label: "Sobre mí" },
+  { href: "#projects", key: "nav.projects", label: "Proyectos" },
+  { href: "#certificates", key: "nav.certificates", label: "Certificados" },
+  { href: "#skills", key: "nav.skills", label: "Habilidades" },
+  { href: "#contact", key: "nav.contact", label: "Contacto" },
+];
+---
 <!doctype html>
 <html lang="es">
   <head>
@@ -20,245 +27,37 @@ const {
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="generator" content={Astro.generator} />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=DM+Serif+Display&display=swap"
-      rel="stylesheet"
-    />
-
-    <title>{title}</title>
-
-    <!-- Fonts -->
+    <script define:vars={{ desktopPresentation }}>
+      if (!location.hash && matchMedia(desktopPresentation).matches && matchMedia("(prefers-reduced-motion: no-preference)").matches) {
+        document.documentElement.dataset.openingPending = "";
+        setTimeout(() => { delete document.documentElement.dataset.openingPending; }, 1600);
+      }
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
-      rel="stylesheet"
-    />
-
-    <!-- View Transitions -->
-    <ViewTransitions />
-
-    <style is:global>
-      /* Custom animation for project image expansion */
-      @keyframes project-image-expand {
-        from {
-          clip-path: inset(0 0 0 0 round 12px);
-        }
-        to {
-          clip-path: inset(0 0 0 0 round 0px);
-        }
-      }
-
-      @keyframes project-image-shrink {
-        from {
-          clip-path: inset(0 0 0 0 round 0px);
-        }
-        to {
-          clip-path: inset(0 0 0 0 round 12px);
-        }
-      }
-
-      ::view-transition-old(project-image) {
-        animation: 0.5s ease-out both project-image-shrink;
-      }
-
-      ::view-transition-new(project-image) {
-        animation: 0.5s ease-out both project-image-expand;
-      }
-
-      /* Fade animation for content */
-      @keyframes fade-in {
-        from {
-          opacity: 0;
-          transform: translateY(20px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-
-      @keyframes fade-out {
-        from {
-          opacity: 1;
-          transform: translateY(0);
-        }
-        to {
-          opacity: 0;
-          transform: translateY(-20px);
-        }
-      }
-
-      ::view-transition-old(root) {
-        animation: 0.3s ease-out both fade-out;
-      }
-
-      ::view-transition-new(root) {
-        animation: 0.4s ease-out 0.1s both fade-in;
-      }
-    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+    <title>{title}</title>
   </head>
-
-  <body class="bg-black text-white overflow-x-hidden relative font-['Inter']">
-    <!-- NAVBAR -->
-    <nav
-      id="main-nav"
-      class="fixed top-0 left-0 w-full z-1000 text-white font-['Inter'] isolate transition-all duration-400 opacity-0"
-    >
-      <div
-        class="max-w-375 mx-auto px-6 md:px-12 py-4 md:py-6 flex justify-between items-center"
-      >
-        <div
-          class="flex gap-4 md:gap-6 items-baseline uppercase tracking-[0.12em]"
-        >
-          <a href="/">
-            <span
-              class="font-['DM_Serif_Display'] text-sm md:text-base font-normal text-white"
-              >Pablo Montero</span
-            >
-          </a>
-        </div>
-
-        <!-- Desktop Menu -->
-        <ul
-          class="hidden md:flex gap-8 lg:gap-12 list-none uppercase tracking-[0.12em] text-xs"
-        >
-          <li>
-            <a
-              class="inline-flex items-center justify-center px-3.5 py-2 rounded-full text-xs font-medium tracking-[0.12em] uppercase text-white/70 no-underline transition-all duration-250 hover:bg-white/6 hover:text-white active:scale-[0.96]"
-              href="#about"><span data-i18n="nav.about">sobre mí</span></a
-            >
-          </li>
-          <li>
-            <a
-              class="inline-flex items-center justify-center px-3.5 py-2 rounded-full text-xs font-medium tracking-[0.12em] uppercase text-white/70 no-underline transition-all duration-250 hover:bg-white/6 hover:text-white active:scale-[0.96]"
-              href="#projects"><span data-i18n="nav.projects">proyectos</span></a
-            >
-          </li>
-          <li>
-            <a
-              class="inline-flex items-center justify-center px-3.5 py-2 rounded-full text-xs font-medium tracking-[0.12em] uppercase text-white/70 no-underline transition-all duration-250 hover:bg-white/6 hover:text-white active:scale-[0.96]"
-              href="#certificates"><span data-i18n="nav.certificates">certificados</span></a
-            >
-          </li>
-          <li>
-            <a
-              class="inline-flex items-center justify-center px-3.5 py-2 rounded-full text-xs font-medium tracking-[0.12em] uppercase text-white/70 no-underline transition-all duration-250 hover:bg-white/6 hover:text-white active:scale-[0.96]"
-              href="#skills"><span data-i18n="nav.skills">habilidades</span></a
-            >
-          </li>
-          <li>
-            <a
-              class="inline-flex items-center justify-center px-3.5 py-2 rounded-full text-xs font-medium tracking-[0.12em] uppercase text-white/70 no-underline transition-all duration-250 hover:bg-white/6 hover:text-white active:scale-[0.96]"
-              href="#contact"><span data-i18n="nav.contact">contacto</span></a
-            >
-          </li>
-        </ul>
-        <button
-          type="button"
-          data-language-toggle
-          data-language-label
-          data-i18n-aria="language.aria"
-          class="hidden md:inline-flex items-center rounded-full border border-white/15 bg-white/5 px-3 py-2 text-xs font-medium uppercase tracking-wider text-white/80 transition hover:bg-white/10 hover:text-white"
-          aria-label="Cambiar idioma a inglés"
-        >English</button>
-
-        <!-- Hamburger Button (Mobile) -->
-        <button
-          id="menu-toggle"
-          class="md:hidden flex flex-col justify-center items-center w-10 h-10 rounded-lg bg-white/5 border border-white/10 transition-all duration-300 hover:bg-white/10"
-          aria-label="Toggle menu"
-          aria-expanded="false"
-        >
-          <span
-            class="hamburger-line w-5 h-0.5 bg-white rounded-full transition-all duration-300 origin-center"
-          ></span>
-          <span
-            class="hamburger-line w-5 h-0.5 bg-white rounded-full transition-all duration-300 origin-center mt-1.5"
-          ></span>
-          <span
-            class="hamburger-line w-5 h-0.5 bg-white rounded-full transition-all duration-300 origin-center mt-1.5"
-          ></span>
-        </button>
-      </div>
-
-      <!-- Mobile Menu -->
-      <div
-        id="mobile-menu"
-        class="md:hidden fixed inset-0 top-60 bg-black/95 backdrop-blur-xl z-999 translate-x-full transition-transform duration-400 ease-out"
-      >
-        <ul
-          class="flex flex-col items-center justify-center h-full gap-8 list-none"
-        >
-          <li>
-            <a
-              class="mobile-link text-2xl font-medium tracking-[0.12em] uppercase text-white/80 no-underline transition-all duration-300 hover:text-white"
-              href="#about"><span data-i18n="nav.about">sobre mí</span></a
-            >
-          </li>
-          <li>
-            <a
-              class="mobile-link text-2xl font-medium tracking-[0.12em] uppercase text-white/80 no-underline transition-all duration-300 hover:text-white"
-              href="#projects"><span data-i18n="nav.projects">proyectos</span></a
-            >
-          </li>
-          <li>
-            <a
-              class="mobile-link text-2xl font-medium tracking-[0.12em] uppercase text-white/80 no-underline transition-all duration-300 hover:text-white"
-              href="#certificates"><span data-i18n="nav.certificates">certificados</span></a
-            >
-          </li>
-          <li>
-            <a
-              class="mobile-link text-2xl font-medium tracking-[0.12em] uppercase text-white/80 no-underline transition-all duration-300 hover:text-white"
-              href="#skills"><span data-i18n="nav.skills">habilidades</span></a
-            >
-          </li>
-          <li>
-            <a
-              class="mobile-link text-2xl font-medium tracking-[0.12em] uppercase text-white/80 no-underline transition-all duration-300 hover:text-white"
-              href="#contact"><span data-i18n="nav.contact">contacto</span></a
-            >
-          </li>
-        </ul>
-        <button
-          type="button"
-          data-language-toggle
-          data-language-label
-          data-i18n-aria="language.aria"
-          class="absolute bottom-8 left-1/2 -translate-x-1/2 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-xs font-medium uppercase tracking-wider text-white/80 transition hover:bg-white/10 hover:text-white"
-          aria-label="Cambiar idioma a inglés"
-        >English</button>
-      </div>
-
-      <div class="max-w-375 mx-auto px-6 md:px-12">
-        <div class="w-full h-px bg-white/25"></div>
-      </div>
-
-      <div class="max-w-375 mx-auto px-6 md:px-12">
-        <div class="w-full h-px bg-white/8">
-          <div
-            id="scroll-progress"
-            class="h-full w-0 bg-white transition-[width] duration-100 ease-linear"
-          >
-          </div>
+  <body>
+    <header class="site-header" data-site-header>
+      <div class="site-frame site-bar">
+        <a class="brand display" href="#inicio">Pablo Montero</a>
+        <nav class="desktop-nav" aria-label="Portafolio">
+          {navigation.map(({ href, key, label }) => <a href={href} data-i18n={key}>{label}</a>)}
+        </nav>
+        <div class="site-tools">
+          <LiveChat />
+          <button type="button" data-language-toggle data-i18n-aria="language.aria" aria-label="Cambiar idioma a inglés"><span data-language-label>English</span></button>
+          <details class="mobile-nav" data-mobile-nav>
+            <summary><span data-i18n="nav.menu">Menú</span> <span aria-hidden="true">+</span></summary>
+            <nav aria-label="Portafolio">
+              {navigation.map(({ href, key, label }) => <a href={href} data-i18n={key}>{label}</a>)}
+            </nav>
+          </details>
         </div>
       </div>
-    </nav>
-
-    <!-- Overlay de blur para móvil -->
-    <div
-      id="menu-overlay"
-      class="fixed inset-0 z-50 bg-black/60 backdrop-blur-md opacity-0 pointer-events-none transition-opacity duration-400 md:hidden"
-    >
-    </div>
-
-    <!-- CONTENIDO DE LA PÁGINA -->
-    <main class="relative z-10">
-      <slot />
-    </main>
-
-    <!-- Scripts normales (NO React aquí) -->
+    </header>
+    <main><slot /></main>
     <script>
       import "../scripts/animations";
       import "../scripts/navbar";
@@ -266,3 +65,53 @@ const {
     </script>
   </body>
 </html>
+<style>
+  .site-header {
+    --nav-glass: blur(4px);
+    --nav-glass-edge: 1px solid rgb(255 255 255 / .095);
+    position: fixed;
+    inset: 0 0 auto;
+    z-index: 10;
+    text-shadow: 0 1px 5px rgb(16 14 13 / .55);
+  }
+  .site-header::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    backdrop-filter: var(--nav-glass);
+    border-block-end: var(--nav-glass-edge);
+  }
+  :global(html[data-opening-pending]) .site-header { visibility: hidden; }
+  .site-bar { min-height: 4.6rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+  .brand { font-size: clamp(1.25rem, 2vw, 1.7rem); white-space: nowrap; }
+  .desktop-nav, .site-tools { display: flex; align-items: center; gap: clamp(.8rem, 2.5vw, 2.7rem); }
+  .desktop-nav a, .site-tools button, summary { font-size: .73rem; font-weight: 600; }
+  .desktop-nav a { text-transform: capitalize; }
+  .site-bar a:hover, .site-tools button:hover, summary:hover { color: var(--gold); }
+  .mobile-nav { display: none; }
+  .mobile-nav summary { list-style: none; cursor: pointer; }
+  .mobile-nav summary::-webkit-details-marker { display: none; }
+  .mobile-nav nav {
+    position: absolute;
+    inset: 100% 0 auto;
+    display: grid;
+    backdrop-filter: var(--nav-glass);
+    border-block-end: var(--nav-glass-edge);
+    padding: .6rem var(--gutter) 1rem;
+  }
+  .mobile-nav nav a { padding-block: .85rem; border-bottom: 1px solid var(--rule); text-transform: capitalize; }
+  @media (max-width: 1023px), (hover: none) {
+    .desktop-nav { display: none; }
+    .mobile-nav { display: block; }
+    .site-bar { min-height: 4rem; }
+    .site-tools button, .mobile-nav summary { min-height: 2.75rem; display: flex; align-items: center; gap: .25rem; }
+    .mobile-nav nav { max-height: calc(100dvh - 4rem); overflow-y: auto; }
+  }
+  @media (max-width: 390px) {
+    .site-bar { gap: .4rem; padding-inline: .75rem; }
+    .site-tools { gap: .5rem; }
+    .brand { font-size: 1.14rem; }
+  }
+</style>
