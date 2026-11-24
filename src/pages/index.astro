@@ -6,6 +6,7 @@ import Skills from "../components/Skills.astro";
 import Projects from "../components/Projects.astro";
 import Certificates from "../components/Certificates.astro";
 import Contact from "../components/Contact.astro";
+import Overture from "../components/Overture.astro";
 import Layout from "../layouts/Layout.astro";
 ---
 
@@ -23,9 +24,56 @@ import Layout from "../layouts/Layout.astro";
       <div class="portfolio-slide" data-slide>
         <Skills />
       </div>
-      <div class="portfolio-slide" data-slide>
-        <Contact />
+      <div class="portfolio-slide contact-rail" data-slide>
+        <div class="contact-stage">
+          <div class="contact-scroll" data-contact-scroll><Contact /></div>
+          <div class="loop-return" data-loop-return aria-hidden="true" inert><Overture returning /></div>
+        </div>
+        <div class="loop-stop" aria-hidden="true"></div>
       </div>
     </div>
   </div>
 </Layout>
+
+<style>
+  .loop-return, .loop-stop { display: none; }
+  :global([data-horizontal]) .contact-rail {
+    position: relative;
+    flex-basis: calc(2 * var(--slide-width));
+    width: calc(2 * var(--slide-width));
+    overflow: visible;
+  }
+  :global([data-horizontal]) .contact-stage {
+    position: sticky;
+    left: 0;
+    width: var(--slide-width);
+    height: 100%;
+    overflow: clip;
+  }
+  :global([data-horizontal]) .contact-scroll {
+    height: 100%;
+    overflow: hidden auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgb(244 236 224 / .28) transparent;
+  }
+  :global([data-horizontal]) .loop-return {
+    display: block;
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    pointer-events: none;
+  }
+  :global([data-horizontal]) .loop-stop {
+    display: block;
+    position: absolute;
+    inset: 0 0 auto auto;
+    width: var(--slide-width);
+    height: 1px;
+    scroll-snap-align: start;
+    pointer-events: none;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    :global([data-horizontal]) .contact-stage { position: relative; overflow: visible; }
+    :global([data-horizontal]) .loop-return { inset-inline-start: 100%; width: 100%; opacity: 1; }
+  }
+</style>
