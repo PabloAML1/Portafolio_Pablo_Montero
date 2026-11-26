@@ -2,7 +2,7 @@
 import type { Project } from "../data/projects";
 interface Props {
   project: Project;
-  translation: Pick<Project, "title" | "description" | "features">;
+  translation: Pick<Project, "title" | "description" | "longDescription" | "features">;
 }
 
 const { project, translation } = Astro.props;
@@ -23,7 +23,8 @@ const modalTitle = `project-${project.id}-title`;
         <ul class="project-tags">{project.technologies.map((tech) => <li>{tech}</li>)}</ul>
         <details>
           <summary class="line-link"><span>{project.features.length}</span> <span data-i18n="projects.features">Funcionalidades</span></summary>
-          <p class="case-description" lang="en">{project.longDescription}</p>
+          <p class="case-description" lang="es" data-lang="es">{translation.longDescription}</p>
+          <p class="case-description" lang="en" data-lang="en">{project.longDescription}</p>
           <ul class="project-features" data-lang="es">{translation.features.map((feature) => <li>{feature}</li>)}</ul>
           <ul class="project-features" data-lang="en">{project.features.map((feature) => <li>{feature}</li>)}</ul>
         </details>

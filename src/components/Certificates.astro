@@ -3,20 +3,20 @@ import { ProjectsPlaylist } from "./ReactBits/ProjectsPlaylist";
 import PortfolioDialog from "./PortfolioDialog.astro";
 
 const certificates = [
-  "Scaling Applications on AWS",
-  "AWS NoSQL Databases",
-  "AWS Cloud Computing",
-  "UTA 2024 Conference",
-  "Introduction to Python",
-  "NestJS + Microservices",
-  "Astro & Headless CMS",
-  "GSAP from Scratch",
-  "Python from Scratch",
-  "English for Interviews",
-].map((text, index) => ({
+  ["aws-cloud-practitioner", "AWS SimuLearn: Cloud Practitioner", "aws-simulearn-cloud-practitioner.webp"],
+  ["aws-high-availability", "AWS: Highly Available Web Applications", "aws-high-availability.webp"],
+  ["aws-core-security", "AWS: Core Security Concepts", "aws-core-security.webp"],
+  ["1", "Scaling Applications on AWS", "cert1.webp"],
+  ["2", "AWS NoSQL Databases", "cert2.webp"],
+  ["cisco-data-science-python", "Cisco: Data Science Essentials with Python", "cisco-data-science-python.webp"],
+  ["6", "NestJS + Microservices", "cert6.webp"],
+  ["7", "Astro & Headless CMS", "cert7.webp"],
+  ["vue-3d", "Experiencias 3D con Vue · midudev", "vue-3d-midudev.webp"],
+  ["8", "GSAP from Scratch", "cert8.webp"],
+].map(([id, text, file]) => ({
   text,
-  image: `/images/Certifications/cert${index + 1}.webp`,
-  dialogId: `certificate-${index + 1}`,
+  image: `/images/Certifications/${file}`,
+  dialogId: `certificate-${id}`,
 }));
 ---
 <section id="certificates" aria-labelledby="certificates-title" data-certificates>

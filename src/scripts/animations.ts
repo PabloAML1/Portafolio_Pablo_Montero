@@ -312,7 +312,7 @@ function mountDesktop(viewport: HTMLElement, activeSection?: HTMLElement | null)
         })
           .fromTo(about.querySelector("[data-about-label]"), { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: .31 }, 0)
           .fromTo(about.querySelector("[data-about-title]"), { x: 54, y: 25, opacity: 0 }, { x: 0, y: 0, opacity: 1, duration: .58 }, .07)
-          .fromTo(about.querySelectorAll("[data-about-copy] > p"), { x: 32, y: 16, opacity: 0 }, { x: 0, y: 0, opacity: 1, duration: .43, stagger: .11 }, .24)
+          .fromTo(about.querySelectorAll("[data-about-copy] > *"), { x: 32, y: 16, opacity: 0 }, { x: 0, y: 0, opacity: 1, duration: .43, stagger: .11 }, .24)
           .fromTo(about.querySelectorAll("[data-about-notes] > div"), { y: 23, opacity: 0 }, { y: 0, opacity: 1, duration: .37, stagger: .095 }, .48);
         return;
       }

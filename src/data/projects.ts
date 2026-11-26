@@ -172,9 +172,40 @@ The platform includes client-side form validation, efficient state management, a
 
 ];
 
-export const spanishProjects: Record<number, Pick<Project, "title" | "type" | "description" | "features">> = {
-    1: { title: 'Sistema de combustible', type: 'Full Stack', description: 'Sistema diseñado para controlar el consumo de combustible en rutas de transporte.', features: ['Autenticación y autorización de usuarios', 'Arquitectura de microservicios', 'Bases de datos distribuidas', 'Informes de análisis de combustible', 'Panel de administración', 'Despliegue en Google Cloud', 'Arquitectura monorepo'] },
-    2: { title: 'Centro de control hospitalario', type: 'Full Stack', description: 'Plataforma web diseñada para gestionar hospitales, personal médico y consultas de pacientes desde un sistema centralizado.', features: ['Gestión de hospitales y personal médico', 'Registros de consultas de pacientes', 'Autenticación con acceso por roles', 'Bases de datos MySQL distribuidas con replicación', 'Entorno local con Docker', 'Paneles de administración y hospitales', 'Arquitectura de base de datos maestro-réplica'] },
-    3: { title: 'BookingView – Plataforma hotelera', type: 'Full Stack', description: 'Plataforma full stack de reservas hoteleras para web y móvil que conecta propietarios de hoteles con viajeros.', features: ['Aplicaciones web y móvil (React y React Native)', 'Autenticación basada en roles', 'Gestión de hoteles y habitaciones', 'Sistema de búsqueda y reservas', 'Integración de pagos con Stripe', 'Panel de administración'] },
-    4: { title: 'Proyecto GPIS – Plataforma de autenticación', type: 'Full Stack', description: 'Plataforma full stack de autenticación con inicio de sesión, registro y validación segura de formularios.', features: ['Autenticación de usuarios (inicio de sesión y registro)', 'Validación de formularios en el cliente', 'Gestión de estado con TanStack Query', 'Componentes de interfaz modernos', 'Backend NestJS con TypeScript', 'Enrutamiento del cliente', 'Seguridad de tipos de extremo a extremo'] },
+export const spanishProjects: Record<number, Pick<Project, "title" | "type" | "description" | "longDescription" | "features">> = {
+    1: {
+        title: 'Sistema de combustible',
+        type: 'Full Stack',
+        description: 'Sistema diseñado para controlar el consumo de combustible en rutas de transporte.',
+        longDescription: `Sistema distribuido para gestionar combustible, planificar viajes y monitorear rutas.
+Utiliza microservicios con NestJS y TypeScript, PostgreSQL en Neon y un despliegue con contenedores en Google Kubernetes Engine.
+Incluye actualizaciones en tiempo real, notificaciones automáticas e integraciones con APIs de terceros.`,
+        features: ['Autenticación y autorización de usuarios', 'Arquitectura de microservicios', 'Bases de datos distribuidas', 'Informes de análisis de combustible', 'Panel de administración', 'Despliegue en Google Cloud', 'Arquitectura monorepo'],
+    },
+    2: {
+        title: 'Centro de control hospitalario',
+        type: 'Full Stack',
+        description: 'Plataforma web diseñada para gestionar hospitales, personal médico y consultas de pacientes desde un sistema centralizado.',
+        longDescription: `Sistema full stack de gestión hospitalaria desarrollado para explorar bases de datos distribuidas y entornos con contenedores.
+Incluye un backend en Node.js, una interfaz en React para administradores y hospitales, e infraestructura con Docker y replicación de MySQL.
+Una base de datos principal con varias réplicas permite simular una arquitectura distribuida y explorar la alta disponibilidad y la consistencia de los datos.`,
+        features: ['Gestión de hospitales y personal médico', 'Registros de consultas de pacientes', 'Autenticación con acceso por roles', 'Bases de datos MySQL distribuidas con replicación', 'Entorno local con Docker', 'Paneles de administración y hospitales', 'Arquitectura de base de datos maestro-réplica'],
+    },
+    3: {
+        title: 'BookingView – Plataforma hotelera',
+        type: 'Full Stack',
+        description: 'Plataforma full stack de reservas hoteleras para web y móvil que conecta propietarios de hoteles con viajeros.',
+        longDescription: `BookingView es una aplicación full stack para buscar, reservar y gestionar alojamientos desde la web y el móvil.
+Integra autenticación con Clerk, pagos en línea con Stripe y un panel de administración de hoteles y reservas.`,
+        features: ['Aplicaciones web y móvil (React y React Native)', 'Autenticación basada en roles', 'Gestión de hoteles y habitaciones', 'Sistema de búsqueda y reservas', 'Integración de pagos con Stripe', 'Panel de administración'],
+    },
+    4: {
+        title: 'Proyecto GPIS – Plataforma de autenticación',
+        type: 'Full Stack',
+        description: 'Plataforma full stack de autenticación con inicio de sesión, registro y validación segura de formularios.',
+        longDescription: `GPIS es una aplicación web full stack con un sistema de autenticación de usuarios.
+Combina un frontend en React y TypeScript con un backend en NestJS.
+Incluye validación de formularios del lado del cliente y gestión de estado para los flujos de registro e inicio de sesión.`,
+        features: ['Autenticación de usuarios (inicio de sesión y registro)', 'Validación de formularios en el cliente', 'Gestión de estado con TanStack Query', 'Componentes de interfaz modernos', 'Backend NestJS con TypeScript', 'Enrutamiento del cliente', 'Seguridad de tipos de extremo a extremo'],
+    },
 };
