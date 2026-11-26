@@ -25,8 +25,10 @@ export function createLiveChat({ origins } = {}) {
   const remove = (client) => {
     if (!clients.delete(client.token)) return;
     if (!clients.size) {
+      messages.length = 0;
       clearInterval(ping);
       ping = undefined;
+      return;
     }
     publishPresence();
   };
